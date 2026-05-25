@@ -608,6 +608,14 @@ const isDesktop = () => window.innerWidth >= 769;
 firebase.initializeApp(FIREBASE_CONFIG);
 db = firebase.firestore();
 
+// Handle redirect result from PWA sign-in
+firebase.auth().getRedirectResult().catch(err => {
+  if (err.code !== 'auth/no-auth-event') {
+    console.error('Redirect sign-in error:', err);
+    alert('Sign-in failed: ' + err.message);
+  }
+});
+
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     currentUser = user;
@@ -624,7 +632,13 @@ firebase.auth().onAuthStateChanged(user => {
 // ── AUTH ──────────────────────────────────────────────────────────────
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(err => alert('Sign-in failed: ' + err.message));
+  // Use redirect in standalone PWA mode (iOS home screen) - popups are blocked there
+  const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+  if (isStandalone) {
+    firebase.auth().signInWithRedirect(provider).catch(err => alert('Sign-in failed: ' + err.message));
+  } else {
+    firebase.auth().signInWithPopup(provider).catch(err => alert('Sign-in failed: ' + err.message));
+  }
 }
 function doSignOut() {
   if (!confirm('Sign out of PTO Ledger?')) return;
