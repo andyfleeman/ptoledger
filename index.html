@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PTO Ledger">
+<meta name="theme-color" content="#B01E24">
+<title>BPS/BES PTO Ledger</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --red:#B01E24;--red2:#8B1519;--red-light:#FDEAEB;--red-mid:#F5C6C8;
+  --blue:#1A6FBF;--blue-light:#E8F1FB;
+  --green:#1E8A3C;--green-light:#E6F5EB;
+  --expense:#C0390B;--expense-light:#FEF0EB;
+  --black:#111318;--gray1:#F5F5F7;--gray2:#E4E4E8;--gray3:#B0B0B8;--gray4:#6B6B75;
+  --white:#FFFFFF;
+  --card-shadow:0 1px 4px rgba(0,0,0,.08),0 0 0 .5px rgba(0,0,0,.06);
+  --font:-apple-system,BlinkMacSystemFont,'SF Pro Display','SF Pro Text',sans-serif;
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:var(--font);background:#E8E8ED;color:var(--black);max-width:430px;margin:0 auto;display:flex;flex-direction:column;height:100vh;}
+@media(min-width:431px){body{border-left:1px solid var(--gray2);border-right:1px solid var(--gray2);box-shadow:0 0 40px rgba(0,0,0,.08);}}
+
+/* LOGIN */
+.login-screen{position:fixed;inset:0;background:var(--red);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:900;padding:40px 32px;}
+.login-screen.hidden{display:none;}
+.login-logo{font-size:60px;margin-bottom:18px;}
+.login-school{font-size:12px;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;text-align:center;}
+.login-title{font-size:32px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:8px;}
+.login-sub{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:48px;text-align:center;line-height:1.6;}
+.google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1A1A1A;border:none;border-radius:14px;padding:15px 24px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .15s;}
+.google-btn:active{transform:scale(.97);}
+.login-setup-btn{margin-top:16px;background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:14px;padding:13px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;text-align:center;}
+.login-note{font-size:12px;color:rgba(255,255,255,.5);margin-top:20px;text-align:center;}
+
+/* STATUS BAR */
+.status-bar{background:var(--red);color:#fff;font-size:12px;font-weight:600;padding:env(safe-area-inset-top,14px) 16px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;}
+
+/* HEADER */
+.app-header{background:var(--red);padding:6px 16px 16px;flex-shrink:0;}
+.school-name{font-size:11px;font-weight:500;color:rgba(255,255,255,.7);letter-spacing:.6px;text-transform:uppercase;margin-bottom:2px;}
+.app-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.app-title{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px;}
+.user-avatar{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.5);object-fit:cover;cursor:pointer;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;}
+.pill-nav{display:flex;gap:8px;}
+.pill{flex:1;padding:8px 0;text-align:center;font-size:13px;font-weight:700;letter-spacing:.2px;border-radius:20px;cursor:pointer;transition:all .18s;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75);background:rgba(255,255,255,.12);user-select:none;}
+.pill.active{background:#fff;color:var(--red);border-color:#fff;}
+.pill-export{flex:0 0 auto;padding:8px 14px;font-size:13px;font-weight:700;border-radius:20px;cursor:pointer;transition:all .18s;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75);background:rgba(255,255,255,.12);user-select:none;}
+.pill-export.active{background:#fff;color:var(--red);border-color:#fff;}
+
+/* SCROLL */
+.scroll-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 100px;}
+
+/* SUMMARY */
+.summary-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.summary-card{background:var(--white);border-radius:14px;padding:11px 12px;box-shadow:var(--card-shadow);}
+.s-label{font-size:10px;font-weight:700;color:var(--gray3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px;}
+.s-value{font-size:18px;font-weight:800;letter-spacing:-.4px;}
+.s-value.bal{color:var(--blue);}
+.s-value.inc{color:var(--green);}
+.s-value.exp{color:var(--expense);}
+
+/* SECTION */
+.section-hdr{display:flex;justify-content:space-between;align-items:center;margin:16px 0 8px;}
+.section-title{font-size:12px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.7px;}
+
+/* LEDGER */
+.ledger-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);}
+.ledger-item{display:flex;align-items:center;gap:11px;padding:13px 14px;border-bottom:.5px solid var(--gray2);cursor:pointer;transition:background .15s;}
+.ledger-item:active{background:var(--gray1);}
+.ledger-item:last-child{border-bottom:none;}
+.tx-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.tx-icon.inc{background:var(--green-light);}
+.tx-icon.exp{background:var(--expense-light);}
+.tx-main{flex:1;min-width:0;}
+.tx-desc{font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--black);}
+.tx-date{font-size:12px;color:var(--gray3);margin-top:2px;}
+.tx-right{text-align:right;flex-shrink:0;}
+.tx-amount{font-size:15px;font-weight:700;}
+.tx-amount.inc{color:var(--green);}
+.tx-amount.exp{color:var(--expense);}
+.tx-bal{font-size:11px;color:var(--blue);font-weight:600;margin-top:2px;}
+.expand-row{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;cursor:pointer;color:var(--red);font-size:13px;font-weight:700;border-top:.5px solid var(--gray2);}
+.expand-arrow{font-size:16px;transition:transform .2s;display:inline-block;}
+.expand-arrow.open{transform:rotate(180deg);}
+.empty-state{text-align:center;padding:44px 20px;color:var(--gray3);}
+.empty-icon{font-size:44px;margin-bottom:10px;}
+.empty-title{font-size:16px;font-weight:600;color:var(--gray4);margin-bottom:4px;}
+.empty-sub{font-size:13px;}
+
+/* SYNC BAR */
+.sync-bar{background:var(--blue-light);border-radius:10px;padding:8px 12px;margin-bottom:12px;font-size:12px;color:var(--blue);font-weight:600;display:none;align-items:center;gap:8px;}
+.sync-bar.show{display:flex;}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--blue);animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* FAB */
+.fab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+22px);right:calc(50% - 215px + 16px);width:58px;height:58px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(176,30,36,.45);z-index:100;transition:transform .15s;}
+.fab:active{transform:scale(.93);}
+
+/* EXPORT TAB */
+.export-card{background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);}
+.export-row{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:.5px solid var(--gray2);cursor:pointer;transition:background .15s;}
+.export-row:last-child{border-bottom:none;}
+.export-row:active{background:var(--gray1);}
+.export-ico{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.export-ico.red{background:var(--red-light);}
+.export-ico.blue{background:var(--blue-light);}
+.export-ico.green{background:var(--green-light);}
+.export-ico.gray{background:var(--gray1);}
+.export-label{font-size:15px;font-weight:600;}
+.export-sub{font-size:12px;color:var(--gray3);margin-top:1px;}
+.export-chevron{margin-left:auto;color:var(--gray3);font-size:20px;font-weight:300;}
+
+/* ACCOUNT CARD */
+.account-card{background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--card-shadow);margin-bottom:14px;display:flex;align-items:center;gap:14px;}
+.acct-avatar-lg{width:48px;height:48px;border-radius:50%;flex-shrink:0;background:var(--gray2);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--gray4);overflow:hidden;}
+.acct-avatar-lg img{width:100%;height:100%;object-fit:cover;}
+.account-name{font-size:15px;font-weight:700;}
+.account-email{font-size:12px;color:var(--gray4);margin-top:2px;}
+.signout-btn{margin-left:auto;padding:8px 14px;border-radius:10px;background:var(--gray1);border:none;font-size:13px;font-weight:700;color:var(--expense);cursor:pointer;font-family:var(--font);flex-shrink:0;}
+
+/* ABOUT */
+.about-card{background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--card-shadow);text-align:center;}
+.about-logo{font-size:36px;margin-bottom:8px;}
+.about-title{font-size:17px;font-weight:800;margin-bottom:4px;}
+.about-sub{font-size:13px;color:var(--gray4);line-height:1.6;}
+
+/* STATUS PILL */
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+.status-pill.connected{background:var(--green-light);color:var(--green);}
+.status-pill.disconnected{background:var(--expense-light);color:var(--expense);}
+.status-dot{width:6px;height:6px;border-radius:50%;}
+.status-pill.connected .status-dot{background:var(--green);}
+.status-pill.disconnected .status-dot{background:var(--expense);}
+
+/* MODAL BASE */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:200;display:flex;align-items:flex-end;justify-content:center;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--white);border-radius:22px 22px 0 0;width:100%;max-width:430px;padding:0 0 env(safe-area-inset-bottom,24px);max-height:92vh;overflow-y:auto;animation:slideUp .28s ease;}
+@keyframes slideUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.modal-handle{width:36px;height:4px;background:var(--gray2);border-radius:2px;margin:12px auto 0;}
+.modal-head{padding:16px 18px 14px;border-bottom:.5px solid var(--gray2);display:flex;align-items:center;justify-content:space-between;}
+.modal-title{font-size:18px;font-weight:800;}
+.modal-close-x{width:28px;height:28px;border-radius:50%;background:var(--gray1);border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--gray4);}
+.modal-body{padding:16px 18px;}
+
+/* SETTINGS MODAL */
+.settings-section{margin-bottom:20px;}
+.settings-section-title{font-size:12px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px;}
+.settings-card{background:var(--gray1);border-radius:14px;overflow:hidden;}
+.settings-field{padding:14px;}
+.settings-field+.settings-field{border-top:.5px solid var(--gray2);}
+.settings-field-label{font-size:12px;font-weight:700;color:var(--gray4);margin-bottom:6px;display:flex;align-items:center;justify-content:space-between;}
+.settings-input{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--white);color:var(--black);outline:none;}
+.settings-input:focus{border-color:var(--red);}
+.settings-input.mono{font-family:ui-monospace,monospace;font-size:13px;letter-spacing:.3px;}
+.settings-hint{font-size:11px;color:var(--gray3);margin-top:5px;line-height:1.4;}
+.settings-link{font-size:12px;color:var(--blue);text-decoration:none;display:inline-block;margin-top:4px;}
+.settings-save-btn{width:100%;padding:15px;border-radius:14px;background:var(--red);color:#fff;border:none;font-size:16px;font-weight:800;cursor:pointer;font-family:var(--font);margin-top:14px;}
+.settings-save-btn:active{opacity:.85;}
+.settings-msg{font-size:13px;margin-top:10px;text-align:center;font-weight:600;min-height:18px;}
+.settings-msg.ok{color:var(--green);}
+.settings-msg.bad{color:var(--expense);}
+
+/* ADD / DETAIL MODAL FORMS */
+.form-group{margin-bottom:14px;}
+.form-label{font-size:12px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;}
+.form-input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--gray2);font-size:16px;font-family:var(--font);background:var(--gray1);color:var(--black);outline:none;-webkit-appearance:none;}
+.form-input:focus{border-color:var(--red);background:#fff;}
+.type-toggle{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.type-btn{padding:11px 0;border-radius:12px;border:1.5px solid var(--gray2);background:var(--gray1);font-size:15px;font-weight:700;cursor:pointer;text-align:center;transition:all .18s;font-family:var(--font);}
+.type-btn.active-inc{background:var(--green-light);border-color:var(--green);color:var(--green);}
+.type-btn.active-exp{background:var(--expense-light);border-color:var(--expense);color:var(--expense);}
+.scan-area{border:1.5px dashed var(--red-mid);border-radius:14px;background:var(--red-light);padding:16px;text-align:center;cursor:pointer;margin-bottom:14px;transition:background .15s;}
+.scan-area:active{background:var(--red-mid);}
+.scan-area-icon{font-size:28px;margin-bottom:6px;}
+.scan-area-text{font-size:14px;font-weight:700;color:var(--red);}
+.scan-area-sub{font-size:12px;color:var(--red);opacity:.7;margin-top:2px;}
+.scan-preview-img{width:100%;border-radius:12px;margin-bottom:12px;display:none;max-height:180px;object-fit:cover;}
+.scanning-msg{display:none;text-align:center;padding:10px 0 6px;font-size:13px;color:var(--gray4);font-weight:600;}
+.spinner{display:inline-block;width:16px;height:16px;border:2.5px solid var(--gray2);border-top-color:var(--red);border-radius:50%;animation:spin .8s linear infinite;vertical-align:-3px;margin-right:6px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.scanned-badge{display:none;background:var(--green-light);border:1px solid var(--green);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;color:var(--green);text-align:center;margin-bottom:12px;}
+.btn-primary{width:100%;padding:16px;border-radius:14px;background:var(--red);color:#fff;border:none;font-size:16px;font-weight:800;cursor:pointer;font-family:var(--font);}
+.btn-primary:active{opacity:.85;}
+.btn-cancel{width:100%;padding:14px;border-radius:14px;background:var(--gray1);border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);margin-top:10px;color:var(--black);}
+.detail-top{text-align:center;padding:20px 18px 14px;}
+.detail-bigicon{font-size:44px;margin-bottom:8px;}
+.detail-bigamt{font-size:36px;font-weight:800;letter-spacing:-.8px;}
+.detail-bigamt.inc{color:var(--green);}
+.detail-bigamt.exp{color:var(--expense);}
+.detail-bigdesc{font-size:15px;color:var(--gray4);margin-top:4px;}
+.detail-rows{margin:0 18px 18px;background:var(--gray1);border-radius:14px;overflow:hidden;}
+.detail-row-item{display:flex;justify-content:space-between;align-items:center;padding:13px 14px;border-bottom:.5px solid var(--gray2);}
+.detail-row-item:last-child{border-bottom:none;}
+.detail-key{font-size:14px;color:var(--gray4);}
+.detail-val{font-size:14px;font-weight:600;}
+.detail-val.blue{color:var(--blue);}
+.receipt-preview{width:calc(100% - 36px);margin:0 18px 14px;border-radius:14px;display:block;}
+.delete-btn{width:calc(100% - 36px);margin:0 18px 10px;padding:14px;border-radius:14px;background:var(--expense-light);color:var(--expense);border:1.5px solid var(--red-mid);font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);}
+.close-btn{width:calc(100% - 36px);margin:0 18px 8px;padding:14px;border-radius:14px;background:var(--gray1);border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);}
+input[type=file]{display:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-logo">🐾</div>
+  <div class="login-school">Brookland Public Schools · Brookland, AR</div>
+  <div class="login-title">PTO Ledger</div>
+  <div class="login-sub">Sign in to keep your ledger in sync across your iPhone and laptop.</div>
+  <button class="google-btn" onclick="signInWithGoogle()">
+    <svg style="width:22px;height:22px;flex-shrink:0;" viewBox="0 0 48 48">
+      <path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 20-8.9 20-20 0-1.3-.1-2.7-.4-4z"/>
+      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 19 13 24 13c3 0 5.7 1.1 7.8 2.9l5.7-5.7C34.1 6.5 29.3 4 24 4c-7.7 0-14.4 4.4-17.7 10.7z"/>
+      <path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.3 35.3 26.8 36 24 36c-5.2 0-9.6-3-11.4-7.3l-6.5 5C9.5 39.5 16.3 44 24 44z"/>
+      <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.4-2.5 4.4-4.5 5.8l6.2 5.2C40.8 35.7 44 30.3 44 24c0-1.3-.1-2.7-.4-4z"/>
+    </svg>
+    Sign in with Google
+  </button>
+  <button class="login-setup-btn" onclick="openSettingsModal(true)">⚙️ Enter Firebase & API Settings</button>
+  <div class="login-note">Firebase must be configured before signing in.</div>
+</div>
+
+<!-- MAIN APP -->
+<div class="status-bar">
+  <span id="clock">9:41 AM</span>
+  <span style="font-size:11px;letter-spacing:.5px;font-weight:700;">PTO LEDGER</span>
+  <span style="font-size:14px;">🔋</span>
+</div>
+
+<div class="app-header">
+  <div class="school-name">Brookland Public Schools · Brookland, AR</div>
+  <div class="app-title-row">
+    <div class="app-title">🐾 PTO Ledger</div>
+    <div class="user-avatar" id="user-avatar" onclick="switchTab('export')" title="Account"></div>
+  </div>
+  <div class="pill-nav">
+    <div class="pill active" onclick="switchTab('bps')" id="pill-bps">Primary</div>
+    <div class="pill" onclick="switchTab('bes')" id="pill-bes">Elementary</div>
+    <div class="pill-export" onclick="switchTab('export')" id="pill-export">Export</div>
+  </div>
+</div>
+
+<div class="scroll-area" id="scroll-area">
+
+  <!-- BPS -->
+  <div id="tab-bps">
+    <div class="sync-bar" id="bps-sync"><div class="sync-dot"></div>Syncing…</div>
+    <div class="summary-grid">
+      <div class="summary-card"><div class="s-label">Balance</div><div class="s-value bal" id="bps-bal">$0.00</div></div>
+      <div class="summary-card"><div class="s-label">Income</div><div class="s-value inc" id="bps-inc">$0.00</div></div>
+      <div class="summary-card"><div class="s-label">Expenses</div><div class="s-value exp" id="bps-exp">$0.00</div></div>
+    </div>
+    <div class="section-hdr">
+      <div class="section-title">Transaction History</div>
+      <div style="font-size:12px;color:var(--gray3);font-weight:600;" id="bps-count-label"></div>
+    </div>
+    <div id="bps-list"></div>
+  </div>
+
+  <!-- BES -->
+  <div id="tab-bes" style="display:none;">
+    <div class="sync-bar" id="bes-sync"><div class="sync-dot"></div>Syncing…</div>
+    <div class="summary-grid">
+      <div class="summary-card"><div class="s-label">Balance</div><div class="s-value bal" id="bes-bal">$0.00</div></div>
+      <div class="summary-card"><div class="s-label">Income</div><div class="s-value inc" id="bes-inc">$0.00</div></div>
+      <div class="summary-card"><div class="s-label">Expenses</div><div class="s-value exp" id="bes-exp">$0.00</div></div>
+    </div>
+    <div class="section-hdr">
+      <div class="section-title">Transaction History</div>
+      <div style="font-size:12px;color:var(--gray3);font-weight:600;" id="bes-count-label"></div>
+    </div>
+    <div id="bes-list"></div>
+  </div>
+
+  <!-- EXPORT TAB -->
+  <div id="tab-export" style="display:none;">
+
+    <div class="section-hdr"><div class="section-title">Account</div></div>
+    <div class="account-card">
+      <div class="acct-avatar-lg" id="acct-avatar-lg"></div>
+      <div style="flex:1;min-width:0;">
+        <div class="account-name" id="acct-name">Not signed in</div>
+        <div class="account-email" id="acct-email"></div>
+      </div>
+      <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
+    </div>
+
+    <div class="section-hdr"><div class="section-title">Configuration</div></div>
+    <div class="export-card" style="margin-bottom:14px;">
+      <div class="export-row" onclick="openSettingsModal(false)">
+        <div class="export-ico gray">⚙️</div>
+        <div>
+          <div class="export-label">Firebase &amp; API Settings</div>
+          <div class="export-sub" id="connectivity-status-sub">Tap to configure</div>
+        </div>
+        <div class="export-chevron">›</div>
+      </div>
+    </div>
+
+    <div class="section-hdr"><div class="section-title">Export Data</div></div>
+    <div class="export-card" style="margin-bottom:14px;">
+      <div class="export-row" onclick="exportCSV('both')">
+        <div class="export-ico red">📤</div>
+        <div><div class="export-label">Export Both Ledgers</div><div class="export-sub">BPS + BES combined CSV</div></div>
+        <div class="export-chevron">›</div>
+      </div>
+      <div class="export-row" onclick="exportCSV('bps')">
+        <div class="export-ico blue">📄</div>
+        <div><div class="export-label">Export Primary (BPS)</div><div class="export-sub">Brookland Primary School only</div></div>
+        <div class="export-chevron">›</div>
+      </div>
+      <div class="export-row" onclick="exportCSV('bes')">
+        <div class="export-ico green">📄</div>
+        <div><div class="export-label">Export Elementary (BES)</div><div class="export-sub">Brookland Elementary School only</div></div>
+        <div class="export-chevron">›</div>
+      </div>
+    </div>
+
+    <div class="section-hdr"><div class="section-title">About</div></div>
+    <div class="about-card">
+      <div class="about-logo">🐾</div>
+      <div class="about-title">Brookland PTO Ledger</div>
+      <div class="about-sub">Brookland Public Schools · Brookland, AR<br>Synced via Google Firebase · v2.0</div>
+    </div>
+  </div>
+</div>
+
+<button class="fab" onclick="openAddModal()" id="fab" aria-label="Add transaction">+</button>
+<input type="file" id="camera-input" accept="image/*" capture="environment">
+
+<!-- ════════════════════════════════════════
+     SETTINGS MODAL
+════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="settings-modal" onclick="overlayClose(event,'settings-modal')">
+  <div class="modal" style="max-height:95vh;">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div class="modal-title">⚙️ Connectivity Settings</div>
+      <button class="modal-close-x" onclick="closeModal('settings-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- FIREBASE SECTION -->
+      <div class="settings-section">
+        <div class="settings-section-title">🔥 Firebase Configuration</div>
+        <div class="settings-card">
+          <div class="settings-field">
+            <div class="settings-field-label">
+              API Key
+              <span id="fb-status-pill" class="status-pill disconnected"><span class="status-dot"></span>Not connected</span>
+            </div>
+            <input class="settings-input mono" id="s-apiKey" type="password" placeholder="AIzaSy…" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-label">Auth Domain</div>
+            <input class="settings-input mono" id="s-authDomain" placeholder="your-project.firebaseapp.com" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-label">Project ID</div>
+            <input class="settings-input mono" id="s-projectId" placeholder="your-project-id" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="settings-field">
+            <div class="settings-field-label">App ID</div>
+            <input class="settings-input mono" id="s-appId" placeholder="1:123456789:web:abc…" autocomplete="off" spellcheck="false">
+          </div>
+        </div>
+        <div class="settings-hint" style="margin-top:8px;">Found in Firebase Console → Project Settings → Your apps → SDK setup &amp; configuration.</div>
+      </div>
+
+      <!-- GEMINI SECTION -->
+      <div class="settings-section">
+        <div class="settings-section-title">✨ Gemini AI — Receipt Scanner</div>
+        <div class="settings-card">
+          <div class="settings-field">
+            <div class="settings-field-label">
+              Gemini API Key
+              <span id="gem-status-pill" class="status-pill disconnected"><span class="status-dot"></span>Not set</span>
+            </div>
+            <input class="settings-input mono" id="s-gemini" type="password" placeholder="AIzaSy…" autocomplete="off" spellcheck="false">
+            <a class="settings-link" href="https://aistudio.google.com/app/apikey" target="_blank">→ Get a free Gemini API key at Google AI Studio</a>
+          </div>
+        </div>
+        <div class="settings-hint" style="margin-top:8px;">Free tier: 1,500 scans/day. No credit card needed. Saved locally on this device only.</div>
+      </div>
+
+      <button class="settings-save-btn" onclick="saveAllSettings()">Save &amp; Connect</button>
+      <div class="settings-msg" id="settings-msg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MODAL -->
+<div class="modal-overlay hidden" id="add-modal" onclick="overlayClose(event,'add-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div class="modal-title">New Transaction</div>
+      <button class="modal-close-x" onclick="closeModal('add-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="type-toggle">
+        <button class="type-btn active-inc" id="btn-inc" onclick="setType('income')">⬇ Income</button>
+        <button class="type-btn" id="btn-exp" onclick="setType('expense')">⬆ Expense</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <input class="form-input" id="desc-input" placeholder="e.g. Book Fair, Field Trip" type="text" autocomplete="off">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount ($)</label>
+        <input class="form-input" id="amount-input" placeholder="0.00" type="number" step="0.01" min="0" inputmode="decimal">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input class="form-input" id="date-input" type="date">
+      </div>
+      <img id="scan-preview-img" class="scan-preview-img" alt="Receipt">
+      <div class="scanned-badge" id="scanned-badge">✅ AI read receipt — please verify the amount above</div>
+      <div class="scan-area" onclick="triggerScan()" id="scan-area">
+        <div class="scan-area-icon">📷</div>
+        <div class="scan-area-text" id="scan-area-text">Scan Receipt or Deposit Slip</div>
+        <div class="scan-area-sub">Gemini AI will auto-fill the amount</div>
+      </div>
+      <div class="scanning-msg" id="scanning-msg"><span class="spinner"></span>Reading receipt with Gemini AI…</div>
+      <button class="btn-primary" onclick="saveTransaction()">Save Transaction</button>
+      <button class="btn-cancel" onclick="closeModal('add-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay hidden" id="detail-modal" onclick="overlayClose(event,'detail-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div id="detail-content"></div>
+    <button class="close-btn" onclick="closeModal('detail-modal')">Close</button>
+    <button class="delete-btn" onclick="deleteTransaction()">Delete Transaction</button>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+// ── STATE ──
+let activeTab='bps', activeType='income';
+let scanB64=null, scanMime='image/jpeg';
+let detailId=null, detailSchool=null;
+const PREVIEW=10;
+const expanded={bps:false,bes:false};
+let db=null, currentUser=null;
+let unsub={bps:null,bes:null};
+
+// ── STORAGE HELPERS ──
+function lsGet(k){return localStorage.getItem(k)||'';}
+function lsSet(k,v){localStorage.setItem(k,v);}
+
+// ── SETTINGS ──
+function loadFbConfig(){try{return JSON.parse(lsGet('pto_fb_cfg')||'null');}catch(e){return null;}}
+
+function openSettingsModal(fromLogin){
+  const cfg=loadFbConfig();
+  if(cfg){
+    document.getElementById('s-apiKey').value=cfg.apiKey?'••••••••••••••••':'';
+    document.getElementById('s-authDomain').value=cfg.authDomain||'';
+    document.getElementById('s-projectId').value=cfg.projectId||'';
+    document.getElementById('s-appId').value=cfg.appId?'••••••••••••••••':'';
+  }
+  const gk=lsGet('pto_gemini_key');
+  document.getElementById('s-gemini').value=gk?'••••••••••••••••':'';
+  updateStatusPills(!!cfg,!!gk);
+  document.getElementById('settings-msg').textContent='';
+  document.getElementById('settings-modal').classList.remove('hidden');
+}
+
+function updateStatusPills(fbOk,gemOk){
+  const fbPill=document.getElementById('fb-status-pill');
+  const gemPill=document.getElementById('gem-status-pill');
+  fbPill.className='status-pill '+(fbOk?'connected':'disconnected');
+  fbPill.innerHTML='<span class="status-dot"></span>'+(fbOk?'Connected':'Not connected');
+  gemPill.className='status-pill '+(gemOk?'connected':'disconnected');
+  gemPill.innerHTML='<span class="status-dot"></span>'+(gemOk?'Key saved':'Not set');
+  const sub=document.getElementById('connectivity-status-sub');
+  if(sub){
+    if(fbOk&&gemOk)sub.textContent='Firebase ✓  Gemini ✓';
+    else if(fbOk)sub.textContent='Firebase ✓  Gemini not set';
+    else sub.textContent='Tap to configure';
+  }
+}
+
+function saveAllSettings(){
+  const msg=document.getElementById('settings-msg');
+  msg.textContent='';msg.className='settings-msg';
+
+  const apiKeyRaw=document.getElementById('s-apiKey').value.trim();
+  const authDomain=document.getElementById('s-authDomain').value.trim();
+  const projectId=document.getElementById('s-projectId').value.trim();
+  const appIdRaw=document.getElementById('s-appId').value.trim();
+  const geminiRaw=document.getElementById('s-gemini').value.trim();
+
+  const existing=loadFbConfig()||{};
+  const apiKey=apiKeyRaw.includes('•')?existing.apiKey:apiKeyRaw;
+  const appId=appIdRaw.includes('•')?existing.appId:appIdRaw;
+  const gemini=geminiRaw.includes('•')?lsGet('pto_gemini_key'):geminiRaw;
+
+  if(!apiKey||!authDomain||!projectId||!appId){
+    msg.textContent='Please fill in all four Firebase fields.';
+    msg.className='settings-msg bad';return;
+  }
+
+  const cfg={apiKey,authDomain,projectId,appId};
+  lsSet('pto_fb_cfg',JSON.stringify(cfg));
+  if(gemini)lsSet('pto_gemini_key',gemini);
+
+  updateStatusPills(true,!!gemini);
+  msg.textContent='✅ Settings saved!';
+  msg.className='settings-msg ok';
+
+  if(!firebase.apps.length){
+    initFirebase(cfg);
+  }
+
+  setTimeout(()=>{
+    closeModal('settings-modal');
+  },1200);
+}
+
+// ── FIREBASE ──
+function initFirebase(cfg){
+  try{
+    if(!firebase.apps.length)firebase.initializeApp(cfg);
+    db=firebase.firestore();
+    firebase.auth().onAuthStateChanged(user=>{
+      if(user){
+        currentUser=user;
+        document.getElementById('login-screen').classList.add('hidden');
+        updateUserUI(user);
+        listenToLedger('bps');
+        listenToLedger('bes');
+      } else {
+        currentUser=null;
+        document.getElementById('login-screen').classList.remove('hidden');
+      }
+    });
+  }catch(e){console.error('Firebase init error:',e);}
+}
+
+function signInWithGoogle(){
+  if(!firebase.apps.length){
+    const cfg=loadFbConfig();
+    if(!cfg){openSettingsModal(true);return;}
+    initFirebase(cfg);
+  }
+  const provider=new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(err=>{alert('Sign-in failed: '+err.message);});
+}
+
+function doSignOut(){
+  if(!confirm('Sign out of PTO Ledger?'))return;
+  if(unsub.bps)unsub.bps();
+  if(unsub.bes)unsub.bes();
+  firebase.auth().signOut();
+}
+
+function updateUserUI(user){
+  const name=user.displayName||'Treasurer';
+  const initials=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
+  const av=document.getElementById('user-avatar');
+  const avLg=document.getElementById('acct-avatar-lg');
+  if(user.photoURL){
+    av.innerHTML=`<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`;
+    avLg.innerHTML=`<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;" alt="">`;
+  } else {
+    av.textContent=initials;
+    avLg.textContent=initials;
+  }
+  document.getElementById('acct-name').textContent=name;
+  document.getElementById('acct-email').textContent=user.email||'';
+}
+
+function listenToLedger(school){
+  if(!currentUser||!db)return;
+  showSync(school,true);
+  const col=db.collection('users').doc(currentUser.uid).collection(school);
+  if(unsub[school])unsub[school]();
+  unsub[school]=col.orderBy('date','desc').onSnapshot(snap=>{
+    const data=[];
+    snap.forEach(doc=>data.push({id:doc.id,...doc.data()}));
+    renderLedger(school,data);
+    showSync(school,false);
+  },err=>{showSync(school,false);console.error(err);});
+}
+
+function showSync(school,show){
+  const el=document.getElementById(school+'-sync');
+  if(el)el.classList.toggle('show',show);
+}
+
+async function addTx(school,tx){
+  if(!currentUser||!db)return;
+  await db.collection('users').doc(currentUser.uid).collection(school).add(tx);
+}
+
+async function deleteTx(school,id){
+  if(!currentUser||!db)return;
+  await db.collection('users').doc(currentUser.uid).collection(school).doc(id).delete();
+}
+
+// ── FORMAT ──
+function fmt(n){return'$'+Math.abs(parseFloat(n)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
+function fmtDate(s){if(!s)return'';const[y,m,d]=s.split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mn[parseInt(m)-1]+' '+parseInt(d)+', '+y;}
+function today(){return new Date().toISOString().split('T')[0];}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── TABS ──
+function switchTab(tab){
+  ['bps','bes','export'].forEach(t=>document.getElementById('tab-'+t).style.display=(t===tab)?'block':'none');
+  document.getElementById('pill-bps').className='pill'+(tab==='bps'?' active':'');
+  document.getElementById('pill-bes').className='pill'+(tab==='bes'?' active':'');
+  document.getElementById('pill-export').className='pill-export'+(tab==='export'?' active':'');
+  activeTab=tab;
+  document.getElementById('fab').style.display=(tab==='export')?'none':'flex';
+  document.getElementById('scroll-area').scrollTop=0;
+  if(tab==='export'){
+    const cfg=loadFbConfig();
+    updateStatusPills(!!cfg,!!lsGet('pto_gemini_key'));
+  }
+}
+
+// ── RENDER ──
+function renderLedger(school,data){
+  const sorted=[...data].sort((a,b)=>new Date(a.date)-new Date(b.date));
+  let bal=0,inc=0,exp=0;
+  const withBal=sorted.map(t=>{
+    if(t.type==='income'){bal+=t.amount;inc+=t.amount;}else{bal-=t.amount;exp+=t.amount;}
+    return{...t,runBal:bal};
+  }).reverse();
+
+  document.getElementById(school+'-bal').textContent=fmt(bal);
+  document.getElementById(school+'-inc').textContent=fmt(inc);
+  document.getElementById(school+'-exp').textContent=fmt(exp);
+  document.getElementById(school+'-count-label').textContent=withBal.length+' total';
+
+  const listEl=document.getElementById(school+'-list');
+  if(!withBal.length){
+    listEl.innerHTML='<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No transactions yet</div><div class="empty-sub">Tap + to add income or an expense</div></div>';
+    return;
+  }
+  const isExp=expanded[school];
+  const show=isExp?withBal:withBal.slice(0,PREVIEW);
+  const hasMore=withBal.length>PREVIEW;
+
+  const safeData=JSON.stringify(withBal).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const rows=show.map(t=>`
+    <div class="ledger-item" onclick='openDetail("${school}","${t.id}",${JSON.stringify(withBal)})'>
+      <div class="tx-icon ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'⬇️':'⬆️'}</div>
+      <div class="tx-main">
+        <div class="tx-desc">${esc(t.desc)}</div>
+        <div class="tx-date">${fmtDate(t.date)}</div>
+      </div>
+      <div class="tx-right">
+        <div class="tx-amount ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
+        <div class="tx-bal">${fmt(t.runBal)}</div>
+      </div>
+    </div>`).join('');
+
+  const expandBtn=hasMore?`<div class="expand-row" onclick="toggleExpand('${school}')">
+    <span>${isExp?'Show less':'Show all '+withBal.length+' transactions'}</span>
+    <span class="expand-arrow${isExp?' open':''}">⌄</span>
+  </div>`:'';
+
+  listEl.innerHTML=`<div class="ledger-card">${rows}${expandBtn}</div>`;
+}
+
+function toggleExpand(school){
+  expanded[school]=!expanded[school];
+  if(currentUser&&db){
+    db.collection('users').doc(currentUser.uid).collection(school).orderBy('date','desc').get().then(snap=>{
+      const data=[];snap.forEach(doc=>data.push({id:doc.id,...doc.data()}));
+      renderLedger(school,data);
+    });
+  }
+}
+
+// ── ADD MODAL ──
+function openAddModal(){
+  scanB64=null;scanMime='image/jpeg';
+  document.getElementById('desc-input').value='';
+  document.getElementById('amount-input').value='';
+  document.getElementById('date-input').value=today();
+  document.getElementById('scan-preview-img').style.display='none';
+  document.getElementById('scanned-badge').style.display='none';
+  document.getElementById('scanning-msg').style.display='none';
+  document.getElementById('scan-area').style.display='block';
+  document.getElementById('scan-area-text').textContent='Scan Receipt or Deposit Slip';
+  setType('income');
+  document.getElementById('add-modal').classList.remove('hidden');
+}
+
+function closeModal(id){document.getElementById(id).classList.add('hidden');}
+function overlayClose(e,id){if(e.target.classList.contains('modal-overlay'))closeModal(id);}
+function setType(t){
+  activeType=t;
+  document.getElementById('btn-inc').className='type-btn'+(t==='income'?' active-inc':'');
+  document.getElementById('btn-exp').className='type-btn'+(t==='expense'?' active-exp':'');
+}
+
+// ── SCAN ──
+function triggerScan(){
+  if(!lsGet('pto_gemini_key')){alert('No Gemini API key found.\nGo to Export → Firebase & API Settings to add your key.');return;}
+  document.getElementById('camera-input').click();
+}
+
+document.getElementById('camera-input').addEventListener('change',async function(e){
+  const file=e.target.files[0];if(!file)return;
+  scanMime=file.type||'image/jpeg';
+  const reader=new FileReader();
+  reader.onload=async function(ev){
+    const dataUrl=ev.target.result;
+    scanB64=dataUrl.split(',')[1];
+    document.getElementById('scan-preview-img').src=dataUrl;
+    document.getElementById('scan-preview-img').style.display='block';
+    document.getElementById('scan-area').style.display='none';
+    document.getElementById('scanning-msg').style.display='block';
+    document.getElementById('scanned-badge').style.display='none';
+    try{
+      const r=await scanWithGemini(scanB64,scanMime);
+      document.getElementById('scanning-msg').style.display='none';
+      if(r.amount!=null&&!isNaN(r.amount))document.getElementById('amount-input').value=parseFloat(r.amount).toFixed(2);
+      if(r.description&&!document.getElementById('desc-input').value.trim())document.getElementById('desc-input').value=r.description;
+      if(r.date)document.getElementById('date-input').value=r.date;
+      document.getElementById('scanned-badge').style.display='block';
+      document.getElementById('scan-area').style.display='block';
+      document.getElementById('scan-area-text').textContent='Re-scan';
+    }catch(err){
+      document.getElementById('scanning-msg').style.display='none';
+      document.getElementById('scan-area').style.display='block';
+      document.getElementById('scan-area-text').textContent='Re-scan';
+      alert('Could not read the receipt automatically.\nPlease enter the amount manually.\n\n'+err.message);
+    }
+  };
+  reader.readAsDataURL(file);this.value='';
+});
+
+async function scanWithGemini(base64,mimeType){
+  const key=lsGet('pto_gemini_key');
+  const prompt='You are a receipt scanner for a school PTO app. Find the final total or deposit amount. Respond ONLY with valid JSON, no markdown. Format: {"amount":<number or null>,"description":"<store or purpose, max 4 words>","date":"<YYYY-MM-DD or null>"}';
+  const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:mimeType,data:base64}},{text:prompt}]}],generationConfig:{temperature:0,maxOutputTokens:200}})
+  });
+  if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'Gemini API error');}
+  const data=await resp.json();
+  const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+// ── SAVE TX ──
+async function saveTransaction(){
+  const desc=document.getElementById('desc-input').value.trim();
+  const rawAmt=document.getElementById('amount-input').value;
+  const amount=parseFloat(rawAmt);
+  const date=document.getElementById('date-input').value;
+  if(!desc){alert('Please enter a description.');return;}
+  if(!rawAmt||isNaN(amount)||amount<=0){alert('Please enter a valid amount greater than $0.');return;}
+  if(!date){alert('Please select a date.');return;}
+  const school=activeTab==='export'?'bps':activeTab;
+  await addTx(school,{type:activeType,desc,amount:Math.round(amount*100)/100,date,image:scanB64||null,imageMime:scanB64?scanMime:null,created:new Date().toISOString()});
+  closeModal('add-modal');
+}
+
+// ── DETAIL ──
+function openDetail(school,id,allData){
+  detailId=id;detailSchool=school;
+  const data=typeof allData==='string'?JSON.parse(allData):allData;
+  const t=data.find(x=>x.id===id);if(!t)return;
+  const isInc=t.type==='income';
+  const imgTag=t.image?`<img src="data:${t.imageMime||'image/jpeg'};base64,${t.image}" class="receipt-preview" alt="Receipt">` :'';
+  document.getElementById('detail-content').innerHTML=`
+    <div class="detail-top">
+      <div class="detail-bigicon">${isInc?'⬇️':'⬆️'}</div>
+      <div class="detail-bigamt ${isInc?'inc':'exp'}">${isInc?'+':'-'}${fmt(t.amount)}</div>
+      <div class="detail-bigdesc">${esc(t.desc)}</div>
+    </div>
+    <div class="detail-rows">
+      <div class="detail-row-item"><span class="detail-key">Type</span><span class="detail-val" style="text-transform:capitalize;color:${isInc?'var(--green)':'var(--expense)'}">${t.type}</span></div>
+      <div class="detail-row-item"><span class="detail-key">Date</span><span class="detail-val">${fmtDate(t.date)}</span></div>
+      <div class="detail-row-item"><span class="detail-key">Account</span><span class="detail-val">${school==='bps'?'Primary (BPS)':'Elementary (BES)'}</span></div>
+      <div class="detail-row-item"><span class="detail-key">Balance After</span><span class="detail-val blue">${fmt(t.runBal)}</span></div>
+    </div>${imgTag}`;
+  document.getElementById('detail-modal').classList.remove('hidden');
+}
+
+function deleteTransaction(){
+  if(!confirm('Delete this transaction? This cannot be undone.'))return;
+  deleteTx(detailSchool,detailId);
+  closeModal('detail-modal');
+}
+
+// ── EXPORT ──
+function exportCSV(which){
+  if(!currentUser||!db){alert('Please sign in first.');return;}
+  const schools=which==='both'?['bps','bes']:[which];
+  let csv='School,Date,Type,Description,Amount,Running Balance\n';
+  Promise.all(schools.map(school=>
+    db.collection('users').doc(currentUser.uid).collection(school).orderBy('date','asc').get().then(snap=>{
+      const rows=[];let run=0;
+      snap.forEach(doc=>{
+        const t=doc.data();
+        if(t.type==='income')run+=t.amount;else run-=t.amount;
+        const name=school==='bps'?'BPS – Brookland Primary':'BES – Brookland Elementary';
+        rows.push(`"${name}","${t.date}","${t.type}","${(t.desc||'').replace(/"/g,'""')}","${t.type==='income'?'':'-'}${parseFloat(t.amount).toFixed(2)}","${run.toFixed(2)}"`);
+      });
+      return rows;
+    })
+  )).then(results=>{
+    results.forEach((rows,i)=>{csv+=rows.join('\n');if(rows.length)csv+='\n';if(which==='both'&&i===0)csv+='\n';});
+    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');a.href=url;a.download=`BPS_BES_PTO_${today()}.csv`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  });
+}
+
+// ── CLOCK ──
+function updateClock(){
+  const n=new Date();let h=n.getHours(),m=n.getMinutes();
+  const ap=h>=12?'PM':'AM';h=h%12||12;
+  document.getElementById('clock').textContent=h+':'+(m<10?'0':'')+m+' '+ap;
+}
+updateClock();setInterval(updateClock,30000);
+
+// ── INIT ──
+(function(){
+  const cfg=loadFbConfig();
+  if(cfg){initFirebase(cfg);}
+  else{document.getElementById('login-screen').classList.remove('hidden');}
+})();
+</script>
+</body>
+</html>
