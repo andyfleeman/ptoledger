@@ -33,7 +33,6 @@ body{font-family:var(--font);background:#E8E8ED;color:var(--black);max-width:430
 .login-sub{font-size:14px;color:rgba(255,255,255,.7);margin-bottom:48px;text-align:center;line-height:1.6;}
 .google-btn{display:flex;align-items:center;gap:12px;background:#fff;color:#1A1A1A;border:none;border-radius:14px;padding:15px 24px;font-size:16px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.2);transition:transform .15s;}
 .google-btn:active{transform:scale(.97);}
-.login-setup-btn{margin-top:16px;background:rgba(255,255,255,.15);color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:14px;padding:13px 24px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);width:100%;text-align:center;}
 .login-note{font-size:12px;color:rgba(255,255,255,.5);margin-top:20px;text-align:center;}
 
 /* STATUS BAR */
@@ -44,9 +43,9 @@ body{font-family:var(--font);background:#E8E8ED;color:var(--black);max-width:430
 .school-name{font-size:11px;font-weight:500;color:rgba(255,255,255,.7);letter-spacing:.6px;text-transform:uppercase;margin-bottom:2px;}
 .app-title-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .app-title{font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px;}
-.user-avatar{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.5);object-fit:cover;cursor:pointer;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;}
+.user-avatar{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.5);cursor:pointer;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;overflow:hidden;}
 .pill-nav{display:flex;gap:8px;}
-.pill{flex:1;padding:8px 0;text-align:center;font-size:13px;font-weight:700;letter-spacing:.2px;border-radius:20px;cursor:pointer;transition:all .18s;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75);background:rgba(255,255,255,.12);user-select:none;}
+.pill{flex:1;padding:8px 0;text-align:center;font-size:13px;font-weight:700;border-radius:20px;cursor:pointer;transition:all .18s;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75);background:rgba(255,255,255,.12);user-select:none;}
 .pill.active{background:#fff;color:var(--red);border-color:#fff;}
 .pill-export{flex:0 0 auto;padding:8px 14px;font-size:13px;font-weight:700;border-radius:20px;cursor:pointer;transition:all .18s;border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75);background:rgba(255,255,255,.12);user-select:none;}
 .pill-export.active{background:#fff;color:var(--red);border-color:#fff;}
@@ -113,7 +112,7 @@ body{font-family:var(--font);background:#E8E8ED;color:var(--black);max-width:430
 .export-ico.gray{background:var(--gray1);}
 .export-label{font-size:15px;font-weight:600;}
 .export-sub{font-size:12px;color:var(--gray3);margin-top:1px;}
-.export-chevron{margin-left:auto;color:var(--gray3);font-size:20px;font-weight:300;}
+.export-chevron{margin-left:auto;color:var(--gray3);font-size:20px;}
 
 /* ACCOUNT CARD */
 .account-card{background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--card-shadow);margin-bottom:14px;display:flex;align-items:center;gap:14px;}
@@ -145,7 +144,7 @@ body{font-family:var(--font);background:#E8E8ED;color:var(--black);max-width:430
 .modal-handle{width:36px;height:4px;background:var(--gray2);border-radius:2px;margin:12px auto 0;}
 .modal-head{padding:16px 18px 14px;border-bottom:.5px solid var(--gray2);display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-size:18px;font-weight:800;}
-.modal-close-x{width:28px;height:28px;border-radius:50%;background:var(--gray1);border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--gray4);}
+.modal-close-x{width:28px;height:28px;border-radius:50%;background:var(--gray1);border:none;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;color:var(--gray4);}
 .modal-body{padding:16px 18px;}
 
 /* SETTINGS MODAL */
@@ -158,15 +157,15 @@ body{font-family:var(--font);background:#E8E8ED;color:var(--black);max-width:430
 .settings-input{width:100%;padding:11px 13px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--white);color:var(--black);outline:none;}
 .settings-input:focus{border-color:var(--red);}
 .settings-input.mono{font-family:ui-monospace,monospace;font-size:13px;letter-spacing:.3px;}
-.settings-hint{font-size:11px;color:var(--gray3);margin-top:5px;line-height:1.4;}
-.settings-link{font-size:12px;color:var(--blue);text-decoration:none;display:inline-block;margin-top:4px;}
+.settings-hint{font-size:11px;color:var(--gray3);margin-top:6px;line-height:1.5;}
+.settings-link{font-size:12px;color:var(--blue);text-decoration:none;display:inline-block;margin-top:5px;}
 .settings-save-btn{width:100%;padding:15px;border-radius:14px;background:var(--red);color:#fff;border:none;font-size:16px;font-weight:800;cursor:pointer;font-family:var(--font);margin-top:14px;}
 .settings-save-btn:active{opacity:.85;}
 .settings-msg{font-size:13px;margin-top:10px;text-align:center;font-weight:600;min-height:18px;}
 .settings-msg.ok{color:var(--green);}
 .settings-msg.bad{color:var(--expense);}
 
-/* ADD / DETAIL MODAL FORMS */
+/* FORM */
 .form-group{margin-bottom:14px;}
 .form-label{font-size:12px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:6px;}
 .form-input{width:100%;padding:12px 14px;border-radius:12px;border:1.5px solid var(--gray2);font-size:16px;font-family:var(--font);background:var(--gray1);color:var(--black);outline:none;-webkit-appearance:none;}
@@ -223,8 +222,7 @@ input[type=file]{display:none;}
     </svg>
     Sign in with Google
   </button>
-  <button class="login-setup-btn" onclick="openSettingsModal(true)">⚙️ Enter Firebase & API Settings</button>
-  <div class="login-note">Firebase must be configured before signing in.</div>
+  <div class="login-note">Data syncs automatically between your iPhone and laptop.</div>
 </div>
 
 <!-- MAIN APP -->
@@ -292,13 +290,13 @@ input[type=file]{display:none;}
       <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
     </div>
 
-    <div class="section-hdr"><div class="section-title">Configuration</div></div>
+    <div class="section-hdr"><div class="section-title">Receipt Scanner</div></div>
     <div class="export-card" style="margin-bottom:14px;">
-      <div class="export-row" onclick="openSettingsModal(false)">
+      <div class="export-row" onclick="openSettingsModal()">
         <div class="export-ico gray">⚙️</div>
         <div>
-          <div class="export-label">Firebase &amp; API Settings</div>
-          <div class="export-sub" id="connectivity-status-sub">Tap to configure</div>
+          <div class="export-label">Gemini AI Settings</div>
+          <div class="export-sub" id="gemini-status-sub">Tap to add your API key</div>
         </div>
         <div class="export-chevron">›</div>
       </div>
@@ -335,48 +333,17 @@ input[type=file]{display:none;}
 <button class="fab" onclick="openAddModal()" id="fab" aria-label="Add transaction">+</button>
 <input type="file" id="camera-input" accept="image/*" capture="environment">
 
-<!-- ════════════════════════════════════════
-     SETTINGS MODAL
-════════════════════════════════════════ -->
+<!-- SETTINGS MODAL (Gemini only) -->
 <div class="modal-overlay hidden" id="settings-modal" onclick="overlayClose(event,'settings-modal')">
-  <div class="modal" style="max-height:95vh;">
+  <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-head">
-      <div class="modal-title">⚙️ Connectivity Settings</div>
+      <div class="modal-title">✨ Gemini AI Settings</div>
       <button class="modal-close-x" onclick="closeModal('settings-modal')">✕</button>
     </div>
     <div class="modal-body">
-
-      <!-- FIREBASE SECTION -->
       <div class="settings-section">
-        <div class="settings-section-title">🔥 Firebase Configuration</div>
-        <div class="settings-card">
-          <div class="settings-field">
-            <div class="settings-field-label">
-              API Key
-              <span id="fb-status-pill" class="status-pill disconnected"><span class="status-dot"></span>Not connected</span>
-            </div>
-            <input class="settings-input mono" id="s-apiKey" type="password" placeholder="AIzaSy…" autocomplete="off" spellcheck="false">
-          </div>
-          <div class="settings-field">
-            <div class="settings-field-label">Auth Domain</div>
-            <input class="settings-input mono" id="s-authDomain" placeholder="your-project.firebaseapp.com" autocomplete="off" spellcheck="false">
-          </div>
-          <div class="settings-field">
-            <div class="settings-field-label">Project ID</div>
-            <input class="settings-input mono" id="s-projectId" placeholder="your-project-id" autocomplete="off" spellcheck="false">
-          </div>
-          <div class="settings-field">
-            <div class="settings-field-label">App ID</div>
-            <input class="settings-input mono" id="s-appId" placeholder="1:123456789:web:abc…" autocomplete="off" spellcheck="false">
-          </div>
-        </div>
-        <div class="settings-hint" style="margin-top:8px;">Found in Firebase Console → Project Settings → Your apps → SDK setup &amp; configuration.</div>
-      </div>
-
-      <!-- GEMINI SECTION -->
-      <div class="settings-section">
-        <div class="settings-section-title">✨ Gemini AI — Receipt Scanner</div>
+        <div class="settings-section-title">Receipt Scanner API Key</div>
         <div class="settings-card">
           <div class="settings-field">
             <div class="settings-field-label">
@@ -384,13 +351,12 @@ input[type=file]{display:none;}
               <span id="gem-status-pill" class="status-pill disconnected"><span class="status-dot"></span>Not set</span>
             </div>
             <input class="settings-input mono" id="s-gemini" type="password" placeholder="AIzaSy…" autocomplete="off" spellcheck="false">
-            <a class="settings-link" href="https://aistudio.google.com/app/apikey" target="_blank">→ Get a free Gemini API key at Google AI Studio</a>
+            <a class="settings-link" href="https://aistudio.google.com/app/apikey" target="_blank">→ Get a free key at Google AI Studio</a>
           </div>
         </div>
-        <div class="settings-hint" style="margin-top:8px;">Free tier: 1,500 scans/day. No credit card needed. Saved locally on this device only.</div>
+        <div class="settings-hint">Free tier: 1,500 receipt scans per day. No credit card needed. This key is saved on this device only and is not synced.</div>
       </div>
-
-      <button class="settings-save-btn" onclick="saveAllSettings()">Save &amp; Connect</button>
+      <button class="settings-save-btn" onclick="saveGeminiKey()">Save API Key</button>
       <div class="settings-msg" id="settings-msg"></div>
     </div>
   </div>
@@ -449,400 +415,384 @@ input[type=file]{display:none;}
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
-// ── STATE ──
-let activeTab='bps', activeType='income';
-let scanB64=null, scanMime='image/jpeg';
-let detailId=null, detailSchool=null;
-const PREVIEW=10;
-const expanded={bps:false,bes:false};
-let db=null, currentUser=null;
-let unsub={bps:null,bes:null};
+// ── FIREBASE CONFIG (baked in) ──────────────────────────────────────────
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyAu-FcNljlV994GDxKoNpbMVhDaFFQFiEk",
+  authDomain: "pto-ledger-aad0e.firebaseapp.com",
+  projectId: "pto-ledger-aad0e",
+  storageBucket: "pto-ledger-aad0e.firebasestorage.app",
+  messagingSenderId: "1007406356125",
+  appId: "1:1007406356125:web:0ca924ffaab406da752674",
+  measurementId: "G-DXHX495PN0"
+};
 
-// ── STORAGE HELPERS ──
-function lsGet(k){return localStorage.getItem(k)||'';}
-function lsSet(k,v){localStorage.setItem(k,v);}
+// ── STATE ──────────────────────────────────────────────────────────────
+let activeTab = 'bps', activeType = 'income';
+let scanB64 = null, scanMime = 'image/jpeg';
+let detailId = null, detailSchool = null;
+const PREVIEW = 10;
+const expanded = { bps: false, bes: false };
+let db = null, currentUser = null;
+let unsub = { bps: null, bes: null };
 
-// ── SETTINGS ──
-function loadFbConfig(){try{return JSON.parse(lsGet('pto_fb_cfg')||'null');}catch(e){return null;}}
+// ── INIT FIREBASE ──────────────────────────────────────────────────────
+firebase.initializeApp(FIREBASE_CONFIG);
+db = firebase.firestore();
 
-function openSettingsModal(fromLogin){
-  const cfg=loadFbConfig();
-  if(cfg){
-    document.getElementById('s-apiKey').value=cfg.apiKey?'••••••••••••••••':'';
-    document.getElementById('s-authDomain').value=cfg.authDomain||'';
-    document.getElementById('s-projectId').value=cfg.projectId||'';
-    document.getElementById('s-appId').value=cfg.appId?'••••••••••••••••':'';
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('login-screen').classList.add('hidden');
+    updateUserUI(user);
+    listenToLedger('bps');
+    listenToLedger('bes');
+  } else {
+    currentUser = null;
+    document.getElementById('login-screen').classList.remove('hidden');
   }
-  const gk=lsGet('pto_gemini_key');
-  document.getElementById('s-gemini').value=gk?'••••••••••••••••':'';
-  updateStatusPills(!!cfg,!!gk);
-  document.getElementById('settings-msg').textContent='';
-  document.getElementById('settings-modal').classList.remove('hidden');
+});
+
+// ── AUTH ───────────────────────────────────────────────────────────────
+function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(err => {
+    alert('Sign-in failed: ' + err.message);
+  });
 }
 
-function updateStatusPills(fbOk,gemOk){
-  const fbPill=document.getElementById('fb-status-pill');
-  const gemPill=document.getElementById('gem-status-pill');
-  fbPill.className='status-pill '+(fbOk?'connected':'disconnected');
-  fbPill.innerHTML='<span class="status-dot"></span>'+(fbOk?'Connected':'Not connected');
-  gemPill.className='status-pill '+(gemOk?'connected':'disconnected');
-  gemPill.innerHTML='<span class="status-dot"></span>'+(gemOk?'Key saved':'Not set');
-  const sub=document.getElementById('connectivity-status-sub');
-  if(sub){
-    if(fbOk&&gemOk)sub.textContent='Firebase ✓  Gemini ✓';
-    else if(fbOk)sub.textContent='Firebase ✓  Gemini not set';
-    else sub.textContent='Tap to configure';
-  }
-}
-
-function saveAllSettings(){
-  const msg=document.getElementById('settings-msg');
-  msg.textContent='';msg.className='settings-msg';
-
-  const apiKeyRaw=document.getElementById('s-apiKey').value.trim();
-  const authDomain=document.getElementById('s-authDomain').value.trim();
-  const projectId=document.getElementById('s-projectId').value.trim();
-  const appIdRaw=document.getElementById('s-appId').value.trim();
-  const geminiRaw=document.getElementById('s-gemini').value.trim();
-
-  const existing=loadFbConfig()||{};
-  const apiKey=apiKeyRaw.includes('•')?existing.apiKey:apiKeyRaw;
-  const appId=appIdRaw.includes('•')?existing.appId:appIdRaw;
-  const gemini=geminiRaw.includes('•')?lsGet('pto_gemini_key'):geminiRaw;
-
-  if(!apiKey||!authDomain||!projectId||!appId){
-    msg.textContent='Please fill in all four Firebase fields.';
-    msg.className='settings-msg bad';return;
-  }
-
-  const cfg={apiKey,authDomain,projectId,appId};
-  lsSet('pto_fb_cfg',JSON.stringify(cfg));
-  if(gemini)lsSet('pto_gemini_key',gemini);
-
-  updateStatusPills(true,!!gemini);
-  msg.textContent='✅ Settings saved!';
-  msg.className='settings-msg ok';
-
-  if(!firebase.apps.length){
-    initFirebase(cfg);
-  }
-
-  setTimeout(()=>{
-    closeModal('settings-modal');
-  },1200);
-}
-
-// ── FIREBASE ──
-function initFirebase(cfg){
-  try{
-    if(!firebase.apps.length)firebase.initializeApp(cfg);
-    db=firebase.firestore();
-    firebase.auth().onAuthStateChanged(user=>{
-      if(user){
-        currentUser=user;
-        document.getElementById('login-screen').classList.add('hidden');
-        updateUserUI(user);
-        listenToLedger('bps');
-        listenToLedger('bes');
-      } else {
-        currentUser=null;
-        document.getElementById('login-screen').classList.remove('hidden');
-      }
-    });
-  }catch(e){console.error('Firebase init error:',e);}
-}
-
-function signInWithGoogle(){
-  if(!firebase.apps.length){
-    const cfg=loadFbConfig();
-    if(!cfg){openSettingsModal(true);return;}
-    initFirebase(cfg);
-  }
-  const provider=new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(err=>{alert('Sign-in failed: '+err.message);});
-}
-
-function doSignOut(){
-  if(!confirm('Sign out of PTO Ledger?'))return;
-  if(unsub.bps)unsub.bps();
-  if(unsub.bes)unsub.bes();
+function doSignOut() {
+  if (!confirm('Sign out of PTO Ledger?')) return;
+  if (unsub.bps) unsub.bps();
+  if (unsub.bes) unsub.bes();
   firebase.auth().signOut();
 }
 
-function updateUserUI(user){
-  const name=user.displayName||'Treasurer';
-  const initials=name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase();
-  const av=document.getElementById('user-avatar');
-  const avLg=document.getElementById('acct-avatar-lg');
-  if(user.photoURL){
-    av.innerHTML=`<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`;
-    avLg.innerHTML=`<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;" alt="">`;
+function updateUserUI(user) {
+  const name = user.displayName || 'Treasurer';
+  const initials = name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  const av = document.getElementById('user-avatar');
+  const avLg = document.getElementById('acct-avatar-lg');
+  if (user.photoURL) {
+    av.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" alt="">`;
+    avLg.innerHTML = `<img src="${user.photoURL}" style="width:100%;height:100%;object-fit:cover;" alt="">`;
   } else {
-    av.textContent=initials;
-    avLg.textContent=initials;
+    av.textContent = initials;
+    avLg.textContent = initials;
   }
-  document.getElementById('acct-name').textContent=name;
-  document.getElementById('acct-email').textContent=user.email||'';
+  document.getElementById('acct-name').textContent = name;
+  document.getElementById('acct-email').textContent = user.email || '';
 }
 
-function listenToLedger(school){
-  if(!currentUser||!db)return;
-  showSync(school,true);
-  const col=db.collection('users').doc(currentUser.uid).collection(school);
-  if(unsub[school])unsub[school]();
-  unsub[school]=col.orderBy('date','desc').onSnapshot(snap=>{
-    const data=[];
-    snap.forEach(doc=>data.push({id:doc.id,...doc.data()}));
-    renderLedger(school,data);
-    showSync(school,false);
-  },err=>{showSync(school,false);console.error(err);});
+// ── FIRESTORE ──────────────────────────────────────────────────────────
+function listenToLedger(school) {
+  if (!currentUser || !db) return;
+  showSync(school, true);
+  const col = db.collection('users').doc(currentUser.uid).collection(school);
+  if (unsub[school]) unsub[school]();
+  unsub[school] = col.orderBy('date', 'desc').onSnapshot(snap => {
+    const data = [];
+    snap.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+    renderLedger(school, data);
+    showSync(school, false);
+  }, err => {
+    showSync(school, false);
+    console.error('Firestore error:', err);
+  });
 }
 
-function showSync(school,show){
-  const el=document.getElementById(school+'-sync');
-  if(el)el.classList.toggle('show',show);
+function showSync(school, show) {
+  const el = document.getElementById(school + '-sync');
+  if (el) el.classList.toggle('show', show);
 }
 
-async function addTx(school,tx){
-  if(!currentUser||!db)return;
+async function addTx(school, tx) {
+  if (!currentUser || !db) return;
   await db.collection('users').doc(currentUser.uid).collection(school).add(tx);
 }
 
-async function deleteTx(school,id){
-  if(!currentUser||!db)return;
+async function deleteTx(school, id) {
+  if (!currentUser || !db) return;
   await db.collection('users').doc(currentUser.uid).collection(school).doc(id).delete();
 }
 
-// ── FORMAT ──
-function fmt(n){return'$'+Math.abs(parseFloat(n)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');}
-function fmtDate(s){if(!s)return'';const[y,m,d]=s.split('-');const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return mn[parseInt(m)-1]+' '+parseInt(d)+', '+y;}
-function today(){return new Date().toISOString().split('T')[0];}
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+// ── FORMAT ─────────────────────────────────────────────────────────────
+function fmt(n) { return '$' + Math.abs(parseFloat(n)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); }
+function fmtDate(s) {
+  if (!s) return '';
+  const [y, m, d] = s.split('-');
+  const mn = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return mn[parseInt(m) - 1] + ' ' + parseInt(d) + ', ' + y;
+}
+function today() { return new Date().toISOString().split('T')[0]; }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-// ── TABS ──
-function switchTab(tab){
-  ['bps','bes','export'].forEach(t=>document.getElementById('tab-'+t).style.display=(t===tab)?'block':'none');
-  document.getElementById('pill-bps').className='pill'+(tab==='bps'?' active':'');
-  document.getElementById('pill-bes').className='pill'+(tab==='bes'?' active':'');
-  document.getElementById('pill-export').className='pill-export'+(tab==='export'?' active':'');
-  activeTab=tab;
-  document.getElementById('fab').style.display=(tab==='export')?'none':'flex';
-  document.getElementById('scroll-area').scrollTop=0;
-  if(tab==='export'){
-    const cfg=loadFbConfig();
-    updateStatusPills(!!cfg,!!lsGet('pto_gemini_key'));
-  }
+// ── TABS ───────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['bps', 'bes', 'export'].forEach(t => document.getElementById('tab-' + t).style.display = (t === tab) ? 'block' : 'none');
+  document.getElementById('pill-bps').className = 'pill' + (tab === 'bps' ? ' active' : '');
+  document.getElementById('pill-bes').className = 'pill' + (tab === 'bes' ? ' active' : '');
+  document.getElementById('pill-export').className = 'pill-export' + (tab === 'export' ? ' active' : '');
+  activeTab = tab;
+  document.getElementById('fab').style.display = (tab === 'export') ? 'none' : 'flex';
+  document.getElementById('scroll-area').scrollTop = 0;
+  if (tab === 'export') refreshGeminiStatus();
 }
 
-// ── RENDER ──
-function renderLedger(school,data){
-  const sorted=[...data].sort((a,b)=>new Date(a.date)-new Date(b.date));
-  let bal=0,inc=0,exp=0;
-  const withBal=sorted.map(t=>{
-    if(t.type==='income'){bal+=t.amount;inc+=t.amount;}else{bal-=t.amount;exp+=t.amount;}
-    return{...t,runBal:bal};
+// ── RENDER ─────────────────────────────────────────────────────────────
+function renderLedger(school, data) {
+  const sorted = [...data].sort((a, b) => new Date(a.date) - new Date(b.date));
+  let bal = 0, inc = 0, exp = 0;
+  const withBal = sorted.map(t => {
+    if (t.type === 'income') { bal += t.amount; inc += t.amount; }
+    else { bal -= t.amount; exp += t.amount; }
+    return { ...t, runBal: bal };
   }).reverse();
 
-  document.getElementById(school+'-bal').textContent=fmt(bal);
-  document.getElementById(school+'-inc').textContent=fmt(inc);
-  document.getElementById(school+'-exp').textContent=fmt(exp);
-  document.getElementById(school+'-count-label').textContent=withBal.length+' total';
+  document.getElementById(school + '-bal').textContent = fmt(bal);
+  document.getElementById(school + '-inc').textContent = fmt(inc);
+  document.getElementById(school + '-exp').textContent = fmt(exp);
+  document.getElementById(school + '-count-label').textContent = withBal.length + ' total';
 
-  const listEl=document.getElementById(school+'-list');
-  if(!withBal.length){
-    listEl.innerHTML='<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No transactions yet</div><div class="empty-sub">Tap + to add income or an expense</div></div>';
+  const listEl = document.getElementById(school + '-list');
+  if (!withBal.length) {
+    listEl.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">No transactions yet</div><div class="empty-sub">Tap + to add income or an expense</div></div>';
     return;
   }
-  const isExp=expanded[school];
-  const show=isExp?withBal:withBal.slice(0,PREVIEW);
-  const hasMore=withBal.length>PREVIEW;
 
-  const safeData=JSON.stringify(withBal).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-  const rows=show.map(t=>`
+  const isExp = expanded[school];
+  const show = isExp ? withBal : withBal.slice(0, PREVIEW);
+  const hasMore = withBal.length > PREVIEW;
+
+  const rows = show.map(t => `
     <div class="ledger-item" onclick='openDetail("${school}","${t.id}",${JSON.stringify(withBal)})'>
-      <div class="tx-icon ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'⬇️':'⬆️'}</div>
+      <div class="tx-icon ${t.type === 'income' ? 'inc' : 'exp'}">${t.type === 'income' ? '⬇️' : '⬆️'}</div>
       <div class="tx-main">
         <div class="tx-desc">${esc(t.desc)}</div>
         <div class="tx-date">${fmtDate(t.date)}</div>
       </div>
       <div class="tx-right">
-        <div class="tx-amount ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
+        <div class="tx-amount ${t.type === 'income' ? 'inc' : 'exp'}">${t.type === 'income' ? '+' : '-'}${fmt(t.amount)}</div>
         <div class="tx-bal">${fmt(t.runBal)}</div>
       </div>
     </div>`).join('');
 
-  const expandBtn=hasMore?`<div class="expand-row" onclick="toggleExpand('${school}')">
-    <span>${isExp?'Show less':'Show all '+withBal.length+' transactions'}</span>
-    <span class="expand-arrow${isExp?' open':''}">⌄</span>
-  </div>`:'';
+  const expandBtn = hasMore ? `<div class="expand-row" onclick="toggleExpand('${school}')">
+    <span>${isExp ? 'Show less' : 'Show all ' + withBal.length + ' transactions'}</span>
+    <span class="expand-arrow${isExp ? ' open' : ''}">⌄</span>
+  </div>` : '';
 
-  listEl.innerHTML=`<div class="ledger-card">${rows}${expandBtn}</div>`;
+  listEl.innerHTML = `<div class="ledger-card">${rows}${expandBtn}</div>`;
 }
 
-function toggleExpand(school){
-  expanded[school]=!expanded[school];
-  if(currentUser&&db){
-    db.collection('users').doc(currentUser.uid).collection(school).orderBy('date','desc').get().then(snap=>{
-      const data=[];snap.forEach(doc=>data.push({id:doc.id,...doc.data()}));
-      renderLedger(school,data);
-    });
+function toggleExpand(school) {
+  expanded[school] = !expanded[school];
+  if (currentUser && db) {
+    db.collection('users').doc(currentUser.uid).collection(school)
+      .orderBy('date', 'desc').get().then(snap => {
+        const data = [];
+        snap.forEach(doc => data.push({ id: doc.id, ...doc.data() }));
+        renderLedger(school, data);
+      });
   }
 }
 
-// ── ADD MODAL ──
-function openAddModal(){
-  scanB64=null;scanMime='image/jpeg';
-  document.getElementById('desc-input').value='';
-  document.getElementById('amount-input').value='';
-  document.getElementById('date-input').value=today();
-  document.getElementById('scan-preview-img').style.display='none';
-  document.getElementById('scanned-badge').style.display='none';
-  document.getElementById('scanning-msg').style.display='none';
-  document.getElementById('scan-area').style.display='block';
-  document.getElementById('scan-area-text').textContent='Scan Receipt or Deposit Slip';
+// ── MODALS ─────────────────────────────────────────────────────────────
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+function overlayClose(e, id) { if (e.target.classList.contains('modal-overlay')) closeModal(id); }
+
+function openAddModal() {
+  scanB64 = null; scanMime = 'image/jpeg';
+  document.getElementById('desc-input').value = '';
+  document.getElementById('amount-input').value = '';
+  document.getElementById('date-input').value = today();
+  document.getElementById('scan-preview-img').style.display = 'none';
+  document.getElementById('scanned-badge').style.display = 'none';
+  document.getElementById('scanning-msg').style.display = 'none';
+  document.getElementById('scan-area').style.display = 'block';
+  document.getElementById('scan-area-text').textContent = 'Scan Receipt or Deposit Slip';
   setType('income');
   document.getElementById('add-modal').classList.remove('hidden');
 }
 
-function closeModal(id){document.getElementById(id).classList.add('hidden');}
-function overlayClose(e,id){if(e.target.classList.contains('modal-overlay'))closeModal(id);}
-function setType(t){
-  activeType=t;
-  document.getElementById('btn-inc').className='type-btn'+(t==='income'?' active-inc':'');
-  document.getElementById('btn-exp').className='type-btn'+(t==='expense'?' active-exp':'');
+function setType(t) {
+  activeType = t;
+  document.getElementById('btn-inc').className = 'type-btn' + (t === 'income' ? ' active-inc' : '');
+  document.getElementById('btn-exp').className = 'type-btn' + (t === 'expense' ? ' active-exp' : '');
 }
 
-// ── SCAN ──
-function triggerScan(){
-  if(!lsGet('pto_gemini_key')){alert('No Gemini API key found.\nGo to Export → Firebase & API Settings to add your key.');return;}
+// ── SETTINGS (Gemini only) ─────────────────────────────────────────────
+function lsGet(k) { return localStorage.getItem(k) || ''; }
+function lsSet(k, v) { localStorage.setItem(k, v); }
+
+function refreshGeminiStatus() {
+  const hasKey = !!lsGet('pto_gemini_key');
+  const sub = document.getElementById('gemini-status-sub');
+  if (sub) sub.textContent = hasKey ? '✅ API key saved' : 'Tap to add your API key';
+}
+
+function openSettingsModal() {
+  const hasKey = !!lsGet('pto_gemini_key');
+  document.getElementById('s-gemini').value = hasKey ? '••••••••••••••••' : '';
+  const pill = document.getElementById('gem-status-pill');
+  pill.className = 'status-pill ' + (hasKey ? 'connected' : 'disconnected');
+  pill.innerHTML = '<span class="status-dot"></span>' + (hasKey ? 'Key saved' : 'Not set');
+  document.getElementById('settings-msg').textContent = '';
+  document.getElementById('settings-modal').classList.remove('hidden');
+}
+
+function saveGeminiKey() {
+  const raw = document.getElementById('s-gemini').value.trim();
+  const msg = document.getElementById('settings-msg');
+  if (!raw || raw.includes('•')) {
+    msg.textContent = 'Please paste a valid API key.';
+    msg.className = 'settings-msg bad';
+    return;
+  }
+  lsSet('pto_gemini_key', raw);
+  const pill = document.getElementById('gem-status-pill');
+  pill.className = 'status-pill connected';
+  pill.innerHTML = '<span class="status-dot"></span>Key saved';
+  msg.textContent = '✅ Gemini API key saved!';
+  msg.className = 'settings-msg ok';
+  refreshGeminiStatus();
+  setTimeout(() => closeModal('settings-modal'), 1200);
+}
+
+// ── SCAN ───────────────────────────────────────────────────────────────
+function triggerScan() {
+  if (!lsGet('pto_gemini_key')) {
+    alert('No Gemini API key found.\nGo to Export → Gemini AI Settings to add your free key.');
+    return;
+  }
   document.getElementById('camera-input').click();
 }
 
-document.getElementById('camera-input').addEventListener('change',async function(e){
-  const file=e.target.files[0];if(!file)return;
-  scanMime=file.type||'image/jpeg';
-  const reader=new FileReader();
-  reader.onload=async function(ev){
-    const dataUrl=ev.target.result;
-    scanB64=dataUrl.split(',')[1];
-    document.getElementById('scan-preview-img').src=dataUrl;
-    document.getElementById('scan-preview-img').style.display='block';
-    document.getElementById('scan-area').style.display='none';
-    document.getElementById('scanning-msg').style.display='block';
-    document.getElementById('scanned-badge').style.display='none';
-    try{
-      const r=await scanWithGemini(scanB64,scanMime);
-      document.getElementById('scanning-msg').style.display='none';
-      if(r.amount!=null&&!isNaN(r.amount))document.getElementById('amount-input').value=parseFloat(r.amount).toFixed(2);
-      if(r.description&&!document.getElementById('desc-input').value.trim())document.getElementById('desc-input').value=r.description;
-      if(r.date)document.getElementById('date-input').value=r.date;
-      document.getElementById('scanned-badge').style.display='block';
-      document.getElementById('scan-area').style.display='block';
-      document.getElementById('scan-area-text').textContent='Re-scan';
-    }catch(err){
-      document.getElementById('scanning-msg').style.display='none';
-      document.getElementById('scan-area').style.display='block';
-      document.getElementById('scan-area-text').textContent='Re-scan';
-      alert('Could not read the receipt automatically.\nPlease enter the amount manually.\n\n'+err.message);
+document.getElementById('camera-input').addEventListener('change', async function(e) {
+  const file = e.target.files[0]; if (!file) return;
+  scanMime = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = async function(ev) {
+    const dataUrl = ev.target.result;
+    scanB64 = dataUrl.split(',')[1];
+    document.getElementById('scan-preview-img').src = dataUrl;
+    document.getElementById('scan-preview-img').style.display = 'block';
+    document.getElementById('scan-area').style.display = 'none';
+    document.getElementById('scanning-msg').style.display = 'block';
+    document.getElementById('scanned-badge').style.display = 'none';
+    try {
+      const r = await scanWithGemini(scanB64, scanMime);
+      document.getElementById('scanning-msg').style.display = 'none';
+      if (r.amount != null && !isNaN(r.amount)) document.getElementById('amount-input').value = parseFloat(r.amount).toFixed(2);
+      if (r.description && !document.getElementById('desc-input').value.trim()) document.getElementById('desc-input').value = r.description;
+      if (r.date) document.getElementById('date-input').value = r.date;
+      document.getElementById('scanned-badge').style.display = 'block';
+      document.getElementById('scan-area').style.display = 'block';
+      document.getElementById('scan-area-text').textContent = 'Re-scan';
+    } catch(err) {
+      document.getElementById('scanning-msg').style.display = 'none';
+      document.getElementById('scan-area').style.display = 'block';
+      document.getElementById('scan-area-text').textContent = 'Re-scan';
+      alert('Could not read the receipt automatically.\nPlease enter the amount manually.\n\n' + err.message);
     }
   };
-  reader.readAsDataURL(file);this.value='';
+  reader.readAsDataURL(file); this.value = '';
 });
 
-async function scanWithGemini(base64,mimeType){
-  const key=lsGet('pto_gemini_key');
-  const prompt='You are a receipt scanner for a school PTO app. Find the final total or deposit amount. Respond ONLY with valid JSON, no markdown. Format: {"amount":<number or null>,"description":"<store or purpose, max 4 words>","date":"<YYYY-MM-DD or null>"}';
-  const resp=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:mimeType,data:base64}},{text:prompt}]}],generationConfig:{temperature:0,maxOutputTokens:200}})
+async function scanWithGemini(base64, mimeType) {
+  const key = lsGet('pto_gemini_key');
+  const prompt = 'You are a receipt scanner for a school PTO app. Find the final total or deposit amount. Respond ONLY with valid JSON, no markdown, no backticks. Format: {"amount":<number or null>,"description":"<store or purpose, max 4 words>","date":"<YYYY-MM-DD or null>"}';
+  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: base64 } }, { text: prompt }] }], generationConfig: { temperature: 0, maxOutputTokens: 200 } })
   });
-  if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||'Gemini API error');}
-  const data=await resp.json();
-  const text=data.candidates?.[0]?.content?.parts?.[0]?.text||'';
-  return JSON.parse(text.replace(/```json|```/g,'').trim());
+  if (!resp.ok) { const e = await resp.json(); throw new Error(e.error?.message || 'Gemini API error'); }
+  const data = await resp.json();
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return JSON.parse(text.replace(/```json|```/g, '').trim());
 }
 
-// ── SAVE TX ──
-async function saveTransaction(){
-  const desc=document.getElementById('desc-input').value.trim();
-  const rawAmt=document.getElementById('amount-input').value;
-  const amount=parseFloat(rawAmt);
-  const date=document.getElementById('date-input').value;
-  if(!desc){alert('Please enter a description.');return;}
-  if(!rawAmt||isNaN(amount)||amount<=0){alert('Please enter a valid amount greater than $0.');return;}
-  if(!date){alert('Please select a date.');return;}
-  const school=activeTab==='export'?'bps':activeTab;
-  await addTx(school,{type:activeType,desc,amount:Math.round(amount*100)/100,date,image:scanB64||null,imageMime:scanB64?scanMime:null,created:new Date().toISOString()});
+// ── SAVE TX ────────────────────────────────────────────────────────────
+async function saveTransaction() {
+  const desc = document.getElementById('desc-input').value.trim();
+  const rawAmt = document.getElementById('amount-input').value;
+  const amount = parseFloat(rawAmt);
+  const date = document.getElementById('date-input').value;
+  if (!desc) { alert('Please enter a description.'); return; }
+  if (!rawAmt || isNaN(amount) || amount <= 0) { alert('Please enter a valid amount greater than $0.'); return; }
+  if (!date) { alert('Please select a date.'); return; }
+  const school = activeTab === 'export' ? 'bps' : activeTab;
+  await addTx(school, {
+    type: activeType, desc,
+    amount: Math.round(amount * 100) / 100,
+    date, image: scanB64 || null,
+    imageMime: scanB64 ? scanMime : null,
+    created: new Date().toISOString()
+  });
   closeModal('add-modal');
 }
 
-// ── DETAIL ──
-function openDetail(school,id,allData){
-  detailId=id;detailSchool=school;
-  const data=typeof allData==='string'?JSON.parse(allData):allData;
-  const t=data.find(x=>x.id===id);if(!t)return;
-  const isInc=t.type==='income';
-  const imgTag=t.image?`<img src="data:${t.imageMime||'image/jpeg'};base64,${t.image}" class="receipt-preview" alt="Receipt">` :'';
-  document.getElementById('detail-content').innerHTML=`
+// ── DETAIL ─────────────────────────────────────────────────────────────
+function openDetail(school, id, allData) {
+  detailId = id; detailSchool = school;
+  const data = typeof allData === 'string' ? JSON.parse(allData) : allData;
+  const t = data.find(x => x.id === id); if (!t) return;
+  const isInc = t.type === 'income';
+  const imgTag = t.image ? `<img src="data:${t.imageMime || 'image/jpeg'};base64,${t.image}" class="receipt-preview" alt="Receipt">` : '';
+  document.getElementById('detail-content').innerHTML = `
     <div class="detail-top">
-      <div class="detail-bigicon">${isInc?'⬇️':'⬆️'}</div>
-      <div class="detail-bigamt ${isInc?'inc':'exp'}">${isInc?'+':'-'}${fmt(t.amount)}</div>
+      <div class="detail-bigicon">${isInc ? '⬇️' : '⬆️'}</div>
+      <div class="detail-bigamt ${isInc ? 'inc' : 'exp'}">${isInc ? '+' : '-'}${fmt(t.amount)}</div>
       <div class="detail-bigdesc">${esc(t.desc)}</div>
     </div>
     <div class="detail-rows">
-      <div class="detail-row-item"><span class="detail-key">Type</span><span class="detail-val" style="text-transform:capitalize;color:${isInc?'var(--green)':'var(--expense)'}">${t.type}</span></div>
+      <div class="detail-row-item"><span class="detail-key">Type</span><span class="detail-val" style="text-transform:capitalize;color:${isInc ? 'var(--green)' : 'var(--expense)'}">${t.type}</span></div>
       <div class="detail-row-item"><span class="detail-key">Date</span><span class="detail-val">${fmtDate(t.date)}</span></div>
-      <div class="detail-row-item"><span class="detail-key">Account</span><span class="detail-val">${school==='bps'?'Primary (BPS)':'Elementary (BES)'}</span></div>
+      <div class="detail-row-item"><span class="detail-key">Account</span><span class="detail-val">${school === 'bps' ? 'Primary (BPS)' : 'Elementary (BES)'}</span></div>
       <div class="detail-row-item"><span class="detail-key">Balance After</span><span class="detail-val blue">${fmt(t.runBal)}</span></div>
     </div>${imgTag}`;
   document.getElementById('detail-modal').classList.remove('hidden');
 }
 
-function deleteTransaction(){
-  if(!confirm('Delete this transaction? This cannot be undone.'))return;
-  deleteTx(detailSchool,detailId);
+function deleteTransaction() {
+  if (!confirm('Delete this transaction? This cannot be undone.')) return;
+  deleteTx(detailSchool, detailId);
   closeModal('detail-modal');
 }
 
-// ── EXPORT ──
-function exportCSV(which){
-  if(!currentUser||!db){alert('Please sign in first.');return;}
-  const schools=which==='both'?['bps','bes']:[which];
-  let csv='School,Date,Type,Description,Amount,Running Balance\n';
-  Promise.all(schools.map(school=>
-    db.collection('users').doc(currentUser.uid).collection(school).orderBy('date','asc').get().then(snap=>{
-      const rows=[];let run=0;
-      snap.forEach(doc=>{
-        const t=doc.data();
-        if(t.type==='income')run+=t.amount;else run-=t.amount;
-        const name=school==='bps'?'BPS – Brookland Primary':'BES – Brookland Elementary';
-        rows.push(`"${name}","${t.date}","${t.type}","${(t.desc||'').replace(/"/g,'""')}","${t.type==='income'?'':'-'}${parseFloat(t.amount).toFixed(2)}","${run.toFixed(2)}"`);
+// ── EXPORT ─────────────────────────────────────────────────────────────
+function exportCSV(which) {
+  if (!currentUser || !db) { alert('Please sign in first.'); return; }
+  const schools = which === 'both' ? ['bps', 'bes'] : [which];
+  let csv = 'School,Date,Type,Description,Amount,Running Balance\n';
+  Promise.all(schools.map(school =>
+    db.collection('users').doc(currentUser.uid).collection(school).orderBy('date', 'asc').get().then(snap => {
+      const rows = []; let run = 0;
+      snap.forEach(doc => {
+        const t = doc.data();
+        if (t.type === 'income') run += t.amount; else run -= t.amount;
+        const name = school === 'bps' ? 'BPS – Brookland Primary' : 'BES – Brookland Elementary';
+        rows.push(`"${name}","${t.date}","${t.type}","${(t.desc || '').replace(/"/g, '""')}","${t.type === 'income' ? '' : '-'}${parseFloat(t.amount).toFixed(2)}","${run.toFixed(2)}"`);
       });
       return rows;
     })
-  )).then(results=>{
-    results.forEach((rows,i)=>{csv+=rows.join('\n');if(rows.length)csv+='\n';if(which==='both'&&i===0)csv+='\n';});
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=`BPS_BES_PTO_${today()}.csv`;
-    document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  )).then(results => {
+    results.forEach((rows, i) => { csv += rows.join('\n'); if (rows.length) csv += '\n'; if (which === 'both' && i === 0) csv += '\n'; });
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `BPS_BES_PTO_${today()}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   });
 }
 
-// ── CLOCK ──
-function updateClock(){
-  const n=new Date();let h=n.getHours(),m=n.getMinutes();
-  const ap=h>=12?'PM':'AM';h=h%12||12;
-  document.getElementById('clock').textContent=h+':'+(m<10?'0':'')+m+' '+ap;
+// ── CLOCK ──────────────────────────────────────────────────────────────
+function updateClock() {
+  const n = new Date(); let h = n.getHours(), m = n.getMinutes();
+  const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+  document.getElementById('clock').textContent = h + ':' + (m < 10 ? '0' : '') + m + ' ' + ap;
 }
-updateClock();setInterval(updateClock,30000);
-
-// ── INIT ──
-(function(){
-  const cfg=loadFbConfig();
-  if(cfg){initFirebase(cfg);}
-  else{document.getElementById('login-screen').classList.remove('hidden');}
-})();
+updateClock(); setInterval(updateClock, 30000);
 </script>
 </body>
 </html>
