@@ -1111,48 +1111,100 @@ function setDatePreset(preset) {
   document.getElementById('em-date-to').value = fmt(to);
 }
 
-// ── MAILING LIST (Firestore) ──────────────────
+// ── MAILING LIST ─────────────────────────────
+let _mailingList = [];
+
 async function loadRecipients() {
-  const list = document.getElementById('recipient-list');
-  list.innerHTML = '<div style="font-size:13px;color:var(--gray3);padding:4px 0;">Loading…</div>';
   try {
-    const snap = await db.collection('users').doc(currentUser.uid).collection('mailingList').get();
-    const emails = [];
-    snap.forEach(doc => emails.push({ id: doc.id, email: doc.data().email }));
-    renderRecipients(emails);
+    const snap = await db.collection('users').doc(currentUser.uid).collection('mailingList').orderBy('added','asc').get();
+    _mailingList = [];
+    snap.forEach(doc => _mailingList.push({ id: doc.id, ...doc.data() }));
+    renderRecipientPreview();
   } catch(e) {
-    list.innerHTML = '<div style="font-size:13px;color:var(--gray3);">Could not load list.</div>';
+    document.getElementById('recipient-preview').innerHTML = '<div style="font-size:13px;color:var(--gray3);">Could not load list.</div>';
   }
 }
 
-function renderRecipients(emails) {
-  const list = document.getElementById('recipient-list');
-  if (!emails.length) {
-    list.innerHTML = '<div style="font-size:13px;color:var(--gray3);padding:4px 0;">No recipients yet. Add one below.</div>';
+function renderRecipientPreview() {
+  const el = document.getElementById('recipient-preview');
+  if (!_mailingList.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--gray3);">No recipients yet — tap Edit List to add some.</div>';
     return;
   }
-  list.innerHTML = emails.map(r => `
-    <div class="recipient-item">
-      <span class="recipient-email">${r.email}</span>
-      <button class="recipient-remove" onclick="removeRecipient('${r.id}')" title="Remove">×</button>
+  el.innerHTML = _mailingList.map(r => `
+    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid var(--gray2);">
+      <span style="font-size:14px;">👤</span>
+      <div style="flex:1;min-width:0;">
+        ${r.name ? `<div style="font-size:13px;font-weight:600;color:var(--black);">${esc(r.name)}</div>` : ''}
+        <div style="font-size:12px;color:var(--gray4);${r.name?'':'font-size:13px;font-weight:600;color:var(--black);'}">${esc(r.email)}</div>
+      </div>
+    </div>`).join('') + `<div style="font-size:11px;color:var(--gray3);margin-top:6px;">${_mailingList.length} recipient${_mailingList.length!==1?'s':''}</div>`;
+}
+
+function openMailingListModal() {
+  renderMailingListModal();
+  document.getElementById('ml-name-input').value = '';
+  document.getElementById('ml-email-input').value = '';
+  document.getElementById('ml-status').textContent = '';
+  document.getElementById('mailing-list-modal').classList.remove('hidden');
+}
+
+function renderMailingListModal() {
+  const el = document.getElementById('mailing-list-items');
+  if (!_mailingList.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--gray3);text-align:center;padding:12px 0;">No recipients yet. Add one below.</div>';
+    return;
+  }
+  el.innerHTML = _mailingList.map(r => `
+    <div style="display:flex;align-items:center;gap:10px;background:var(--gray1);border-radius:12px;padding:12px 14px;">
+      <div style="flex:1;min-width:0;">
+        ${r.name ? `<div style="font-size:14px;font-weight:700;color:var(--black);">${esc(r.name)}</div>` : ''}
+        <div style="font-size:${r.name?'12':'14'}px;color:${r.name?'var(--gray4)':'var(--black)'};font-weight:${r.name?'500':'600'};">${esc(r.email)}</div>
+      </div>
+      <button onclick="mlRemoveRecipient('${r.id}')" style="background:var(--expense-light);border:none;color:var(--expense);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">Remove</button>
     </div>`).join('');
 }
 
-async function addRecipient() {
-  const input = document.getElementById('new-recipient-input');
-  const email = input.value.trim().toLowerCase();
-  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+async function mlAddRecipient() {
+  const nameEl = document.getElementById('ml-name-input');
+  const emailEl = document.getElementById('ml-email-input');
+  const statusEl = document.getElementById('ml-status');
+  const name = nameEl.value.trim();
+  const email = emailEl.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) {
+    statusEl.textContent = 'Please enter a valid email address.';
+    statusEl.style.color = 'var(--expense)';
+    return;
+  }
+  if (_mailingList.find(r => r.email === email)) {
+    statusEl.textContent = 'That email is already in your list.';
+    statusEl.style.color = 'var(--expense)';
+    return;
+  }
   try {
-    await db.collection('users').doc(currentUser.uid).collection('mailingList').add({ email, added: new Date().toISOString() });
-    input.value = '';
-    loadRecipients();
-  } catch(e) { alert('Could not save recipient: ' + e.message); }
+    const ref = await db.collection('users').doc(currentUser.uid).collection('mailingList')
+      .add({ name: name || null, email, added: new Date().toISOString() });
+    _mailingList.push({ id: ref.id, name: name || null, email, added: new Date().toISOString() });
+    nameEl.value = '';
+    emailEl.value = '';
+    statusEl.textContent = '✅ Added!';
+    statusEl.style.color = 'var(--green)';
+    setTimeout(() => statusEl.textContent = '', 2000);
+    renderMailingListModal();
+    renderRecipientPreview();
+  } catch(e) {
+    statusEl.textContent = 'Could not save: ' + e.message;
+    statusEl.style.color = 'var(--expense)';
+  }
 }
 
-async function removeRecipient(id) {
+async function mlRemoveRecipient(id) {
+  if (!confirm('Remove this recipient from your mailing list?')) return;
   try {
     await db.collection('users').doc(currentUser.uid).collection('mailingList').doc(id).delete();
-    loadRecipients();
+    _mailingList = _mailingList.filter(r => r.id !== id);
+    renderMailingListModal();
+    renderRecipientPreview();
   } catch(e) { alert('Could not remove: ' + e.message); }
 }
 
@@ -1238,6 +1290,28 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
   </div>
 
 </div>
+
+<!-- MAILING LIST MODAL -->
+<div class="modal-overlay hidden" id="mailing-list-modal" onclick="overlayClose(event,'mailing-list-modal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-head">
+      <div class="modal-title">📋 Mailing List</div>
+      <button class="modal-close-x" onclick="closeModal('mailing-list-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div id="mailing-list-items" style="margin-bottom:16px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div style="font-size:12px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Add New Recipient</div>
+      <div style="display:flex;gap:8px;margin-bottom:6px;">
+        <input class="add-recipient-input" id="ml-name-input" type="text" placeholder="Name (optional)" autocomplete="name" style="flex:1;">
+        <input class="add-recipient-input" id="ml-email-input" type="email" placeholder="Email address" autocomplete="email" style="flex:1.4;">
+      </div>
+      <button class="add-recipient-btn" style="width:100%;padding:12px;border-radius:12px;font-size:15px;" onclick="mlAddRecipient()">+ Add to List</button>
+      <div id="ml-status" style="font-size:12px;text-align:center;margin-top:8px;font-weight:600;min-height:16px;"></div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>`;
 }
@@ -1255,11 +1329,10 @@ async function sendBalanceEmail() {
   if (!fromDate || !toDate) { alert('Please select a date range.'); return; }
   if (fromDate > toDate) { alert('Start date must be before end date.'); return; }
 
-  // Get recipients
-  const recipSnap = await db.collection('users').doc(currentUser.uid).collection('mailingList').get();
-  const recipients = [];
-  recipSnap.forEach(doc => recipients.push(doc.data().email));
-  if (!recipients.length) { alert('Please add at least one recipient to your mailing list.'); return; }
+  // Get recipients from cache
+  const recipients = _mailingList.map(r => r.email);
+  if (!recipients.length) { alert('Please add at least one recipient.
+Tap "Edit List" in the Mailing List section to add recipients.'); return; }
 
   btn.disabled = true;
   btnLabel.textContent = 'Building statement…';
@@ -1363,8 +1436,8 @@ async function sendBalanceEmail() {
 
 // ── ENTER KEY on recipient input ─────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const inp = document.getElementById('new-recipient-input');
-  if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') addRecipient(); });
+  const mlEmail = document.getElementById('ml-email-input');
+  if (mlEmail) mlEmail.addEventListener('keydown', e => { if (e.key === 'Enter') mlAddRecipient(); });
 });
 
 </script>
@@ -1412,11 +1485,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <!-- MAILING LIST -->
       <div class="email-section">
-        <div class="email-section-title">Mailing List</div>
-        <div class="recipient-list" id="recipient-list"></div>
-        <div class="add-recipient-row">
-          <input class="add-recipient-input" id="new-recipient-input" type="email" placeholder="Add email address…" autocomplete="email">
-          <button class="add-recipient-btn" onclick="addRecipient()">Add</button>
+        <div class="email-section-title" style="display:flex;align-items:center;justify-content:space-between;">
+          Mailing List
+          <button onclick="openMailingListModal()" style="font-size:12px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0;">Edit List ›</button>
+        </div>
+        <div id="recipient-preview" style="background:var(--gray1);border-radius:12px;padding:12px 14px;">
+          <div style="font-size:13px;color:var(--gray3);">Loading…</div>
         </div>
       </div>
 
