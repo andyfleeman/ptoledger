@@ -624,7 +624,6 @@ firebase.auth().onAuthStateChanged(user => {
 // ── AUTH ──────────────────────────────────────────────────────────────
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/gmail.send');
   firebase.auth().signInWithPopup(provider).catch(err => alert('Sign-in failed: ' + err.message));
 }
 function doSignOut() {
@@ -1157,14 +1156,7 @@ async function removeRecipient(id) {
   } catch(e) { alert('Could not remove: ' + e.message); }
 }
 
-// ── GET GMAIL ACCESS TOKEN ────────────────────
-async function getGmailToken() {
-  // Re-authenticate to get token with gmail scope
-  const provider = new firebase.auth.GoogleAuthProvider();
-  provider.addScope('https://www.googleapis.com/auth/gmail.send');
-  const result = await firebase.auth().signInWithPopup(provider);
-  return result.credential.accessToken;
-}
+// Gmail API replaced with mailto
 
 // ── BUILD HTML EMAIL ──────────────────────────
 function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal, incTotal, expTotal) {
@@ -1250,44 +1242,9 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 </html>`;
 }
 
-// ── SEND VIA GMAIL API ────────────────────────
-async function sendViaGmail(accessToken, toEmails, subject, htmlBody) {
-  const boundary = 'boundary_' + Date.now();
-  const mimeMessage = [
-    `To: ${toEmails.join(', ')}`,
-    `From: ${currentUser.email}`,
-    `Subject: ${subject}`,
-    'MIME-Version: 1.0',
-    `Content-Type: multipart/alternative; boundary="${boundary}"`,
-    '',
-    `--${boundary}`,
-    'Content-Type: text/html; charset=UTF-8',
-    'Content-Transfer-Encoding: base64',
-    '',
-    btoa(unescape(encodeURIComponent(htmlBody))),
-    `--${boundary}--`
-  ].join('\r\n');
+// sendViaGmail replaced with mailto
 
-  const encoded = btoa(unescape(encodeURIComponent(mimeMessage)))
-    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-
-  const resp = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer ' + accessToken,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({ raw: encoded })
-  });
-
-  if (!resp.ok) {
-    const err = await resp.json();
-    throw new Error(err.error?.message || 'Gmail send failed');
-  }
-  return await resp.json();
-}
-
-// ── MAIN SEND FUNCTION ────────────────────────
+// ── MAIN SEND FUNCTION (mailto) ───────────────
 async function sendBalanceEmail() {
   const fromDate = document.getElementById('em-date-from').value;
   const toDate = document.getElementById('em-date-to').value;
@@ -1305,40 +1262,39 @@ async function sendBalanceEmail() {
   if (!recipients.length) { alert('Please add at least one recipient to your mailing list.'); return; }
 
   btn.disabled = true;
-  btnLabel.textContent = 'Getting permission…';
+  btnLabel.textContent = 'Building statement…';
   statusEl.textContent = '';
   statusEl.className = 'send-status';
 
   try {
-    // Get Gmail access token
-    const token = await getGmailToken();
+    const fmtD = s => { if(!s)return''; const[y,m,d]=s.split('-'); const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return mn[parseInt(m)-1]+' '+parseInt(d)+', '+y; };
+    const fmtCur = n => '$' + Math.abs(parseFloat(n)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
-    btnLabel.textContent = 'Fetching data…';
-
-    // Fetch data for selected schools
     const schools = emailSchool === 'both' ? ['bps','bes'] : [emailSchool];
-    const schoolLabels = { bps: 'Brookland Primary School (BPS)', bes: 'Brookland Elementary School (BES)', both: 'BPS & BES Combined' };
+    const schoolNames = { bps: 'Primary (BPS)', bes: 'Elementary (BES)' };
 
-    let allSections = '';
-    let combinedBal = 0, combinedInc = 0, combinedExp = 0;
+    // Build plain-text body for mailto (HTML not supported in mailto)
+    let body = `BROOKLAND PUBLIC SCHOOLS — PTO BALANCE STATEMENT
+`;
+    body += `${'='.repeat(50)}
+`;
+    body += `Period: ${fmtD(fromDate)} to ${fmtD(toDate)}
+`;
+    body += `Generated: ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
+
+`;
 
     for (const school of schools) {
-      const snap = await db.collection('users').doc(currentUser.uid).collection(school)
-        .orderBy('date', 'asc').get();
+      const snap = await db.collection('users').doc(currentUser.uid)
+        .collection(school).orderBy('date','asc').get();
 
-      // Compute current balance (all time)
-      let currentBal = 0;
-      snap.forEach(doc => {
-        const t = doc.data();
-        if (t.type === 'income') currentBal += t.amount;
-        else currentBal -= t.amount;
-      });
-
-      // Filter to date range
+      let currentBal = 0, periodInc = 0, periodExp = 0;
       const periodTx = [];
-      let periodInc = 0, periodExp = 0;
+
       snap.forEach(doc => {
         const t = { id: doc.id, ...doc.data() };
+        if (t.type === 'income') currentBal += t.amount;
+        else currentBal -= t.amount;
         if (t.date >= fromDate && t.date <= toDate) {
           periodTx.push(t);
           if (t.type === 'income') periodInc += t.amount;
@@ -1346,55 +1302,55 @@ async function sendBalanceEmail() {
         }
       });
 
-      combinedBal += currentBal;
-      combinedInc += periodInc;
-      combinedExp += periodExp;
+      body += `${schoolNames[school] || school.toUpperCase()}
+`;
+      body += `${'-'.repeat(40)}
+`;
+      body += `Current Balance:  ${fmtCur(currentBal)}
+`;
+      body += `Period Income:    +${fmtCur(periodInc)}
+`;
+      body += `Period Expenses:  -${fmtCur(periodExp)}
+`;
+      body += `Net Change:       ${(periodInc-periodExp)>=0?'+':''}${fmtCur(periodInc-periodExp)}
 
-      if (schools.length === 1) {
-        allSections = buildEmailHTML(
-          schoolLabels[school], fromDate, toDate,
-          periodTx, currentBal, periodInc, periodExp
-        );
+`;
+
+      if (periodTx.length) {
+        body += `TRANSACTIONS (${periodTx.length}):
+`;
+        periodTx.forEach(t => {
+          const sign = t.type === 'income' ? '+' : '-';
+          const vendor = t.vendor ? ` [${t.vendor}]` : '';
+          body += `  ${t.date}  ${sign}${fmtCur(t.amount)}  ${t.desc}${vendor}
+`;
+        });
       } else {
-        // For "both" — build combined
-        allSections = { school, periodTx, currentBal, periodInc, periodExp };
+        body += `No transactions in this period.
+`;
       }
+      body += `
+`;
     }
 
-    // If both schools, build combined email
-    if (schools.length > 1) {
-      const bpsData = await (async () => {
-        const snap = await db.collection('users').doc(currentUser.uid).collection('bps').orderBy('date','asc').get();
-        let bal=0,inc=0,exp=0; const tx=[];
-        snap.forEach(doc=>{const t={id:doc.id,...doc.data()};if(t.type==='income')bal+=t.amount;else bal-=t.amount;if(t.date>=fromDate&&t.date<=toDate){tx.push(t);if(t.type==='income')inc+=t.amount;else exp+=t.amount;}});
-        return{bal,inc,exp,tx};
-      })();
-      const besData = await (async () => {
-        const snap = await db.collection('users').doc(currentUser.uid).collection('bes').orderBy('date','asc').get();
-        let bal=0,inc=0,exp=0; const tx=[];
-        snap.forEach(doc=>{const t={id:doc.id,...doc.data()};if(t.type==='income')bal+=t.amount;else bal-=t.amount;if(t.date>=fromDate&&t.date<=toDate){tx.push(t);if(t.type==='income')inc+=t.amount;else exp+=t.amount;}});
-        return{bal,inc,exp,tx};
-      })();
-      const fmtCur = n => '$' + Math.abs(parseFloat(n)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-      const combinedEmailHTML = buildEmailHTML('BPS & BES Combined', fromDate, toDate,
-        [...bpsData.tx.map(t=>({...t,desc:'[BPS] '+t.desc})), ...besData.tx.map(t=>({...t,desc:'[BES] '+t.desc}))].sort((a,b)=>a.date.localeCompare(b.date)),
-        bpsData.bal + besData.bal, bpsData.inc + besData.inc, bpsData.exp + besData.exp
-      );
-      allSections = combinedEmailHTML;
-    }
+    body += `${'='.repeat(50)}
+`;
+    body += `Brookland PTO Ledger · Brookland, Arkansas
+`;
 
-    btnLabel.textContent = 'Sending…';
-
-    const fmtD = s => { if(!s)return''; const[y,m,d]=s.split('-'); const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return mn[parseInt(m)-1]+' '+parseInt(d)+', '+y; };
     const subject = `Brookland PTO Balance Statement — ${fmtD(fromDate)} to ${fmtD(toDate)}`;
 
-    await sendViaGmail(token, recipients, subject, allSections);
+    // Build mailto link
+    const mailtoTo = recipients.join(',');
+    const mailtoLink = `mailto:${encodeURIComponent(mailtoTo)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
-    btnLabel.textContent = 'Sent!';
-    statusEl.textContent = `✅ Statement sent to ${recipients.length} recipient${recipients.length>1?'s':''}!`;
-    statusEl.className = 'send-status ok';
-    btn.disabled = false;
+    // Open mail app
+    window.location.href = mailtoLink;
+
     btnLabel.textContent = 'Send Statement';
+    btn.disabled = false;
+    statusEl.textContent = `✅ Your mail app should open — tap Send to deliver to ${recipients.length} recipient${recipients.length>1?'s':''}!`;
+    statusEl.className = 'send-status ok';
 
   } catch(err) {
     btn.disabled = false;
@@ -1418,7 +1374,7 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="modal" style="max-height:95vh;">
     <div class="modal-handle"></div>
     <div class="modal-head">
-      <div class="modal-title">✉️ Send Balance Statement</div>
+      <div class="modal-title">✉️ Email Balance Statement</div>
       <button class="modal-close-x" onclick="closeModal('email-modal')">✕</button>
     </div>
     <div class="modal-body">
@@ -1465,8 +1421,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
 
       <button class="send-btn" id="send-email-btn" onclick="sendBalanceEmail()">
-        <span>📨</span><span id="send-btn-label">Send Statement</span>
+        <span>📨</span><span id="send-btn-label">Open in Mail App</span>
       </button>
+      <div style="font-size:11px;color:var(--gray3);text-align:center;margin-top:6px;">Opens your mail app with the statement pre-filled — just tap Send.</div>
       <div class="send-status" id="send-status"></div>
 
     </div>
