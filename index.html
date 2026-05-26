@@ -374,7 +374,7 @@ input[type=file]{display:none;}
   </button>
   <div class="login-note" id="login-note">Data syncs between your mobile phone and laptop.</div>
   <div id="pwa-note" style="display:none;font-size:12px;color:rgba(255,255,255,.6);margin-top:10px;text-align:center;max-width:300px;line-height:1.5;">
-    Tip: Sign in from Safari browser first, then add to home screen.
+    Tap "Sign in with Google" — it will open Safari to complete sign-in, then return here.
   </div>
 </div>
 
@@ -680,20 +680,37 @@ db = firebase.firestore();
 // Clear any stale/invalid Gemini key from localStorage
 localStorage.removeItem('pto_gemini_key');
 
-// Handle redirect result (iOS PWA sign-in return)
-firebase.auth().getRedirectResult().then(function(result) {
-  // onAuthStateChanged fires automatically after successful redirect
-}).catch(function(err) {
-  if (err.code && err.code !== 'auth/no-auth-event') {
-    console.error('Redirect result error:', err.code);
-  }
-});
-
-// Show PWA-specific tip if running as installed app
+// Handle sign-in from Safari handoff (iOS PWA opens Safari which signs in)
 (function() {
-  const isStandalone = window.navigator.standalone === true ||
-    window.matchMedia('(display-mode: standalone)').matches;
-  if (isStandalone) {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('signin') === '1') {
+    // This page was opened from the PWA in Safari - do the popup sign-in here
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).then(function(result) {
+      // Success - close this tab, user is now signed in
+      // The PWA will detect the auth state change on next focus
+      document.body.innerHTML = '<div style="font-family:-apple-system,sans-serif;padding:40px;text-align:center;background:#B01E24;color:#fff;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
+        '<div style="font-size:48px;margin-bottom:16px;">✅</div>' +
+        '<div style="font-size:22px;font-weight:700;margin-bottom:10px;">Signed in!</div>' +
+        '<div style="font-size:15px;opacity:.8;">Return to the PTO Ledger app on your home screen.</div>' +
+        '</div>';
+    }).catch(function(err) {
+      alert('Sign-in failed: ' + err.message);
+    });
+    return;
+  }
+
+  // Normal page load - handle any pending redirect result
+  firebase.auth().getRedirectResult().then(function() {
+    // onAuthStateChanged handles session
+  }).catch(function(err) {
+    if (err.code && err.code !== 'auth/no-auth-event') {
+      console.error('Auth redirect error:', err.code);
+    }
+  });
+
+  // Show PWA tip on login screen if in standalone mode
+  if (window.navigator.standalone === true) {
     const note = document.getElementById('pwa-note');
     if (note) note.style.display = 'block';
   }
@@ -715,35 +732,12 @@ firebase.auth().onAuthStateChanged(user => {
 // ── AUTH ──────────────────────────────────────────────────────────────
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  const isStandalone = window.navigator.standalone === true ||
-    window.matchMedia('(display-mode: standalone)').matches;
-
-  if (isStandalone) {
-    // iOS PWA: Firebase popup is blocked, redirect loses session on return.
-    // Solution: open auth in Safari browser tab, session persists back to PWA.
-    // Show instructions and open the sign-in URL in Safari.
-    const el = document.getElementById('login-screen');
-    const btn = el ? el.querySelector('.google-btn') : null;
-
-    // Use signInWithRedirect - it navigates away and back
-    // This works when authDomain is properly set and domain is authorized
-    firebase.auth().signInWithRedirect(provider).catch(function(err) {
-      // If redirect fails, show a clear message with manual instructions
-      console.error('Redirect failed:', err.code, err.message);
-      if (btn) btn.textContent = 'Tap to try again';
-      alert(
-        'Sign-in issue on home screen app.
-
-' +
-        'Please open this app in Safari browser (not from home screen), ' +
-        'sign in there, then add it back to your home screen.
-
-' +
-        'Error: ' + err.message
-      );
-    });
+  const isIOSStandalone = window.navigator.standalone === true;
+  if (isIOSStandalone) {
+    // iOS PWA: popups blocked + Firebase redirect loses state.
+    // Open this same page in Safari (not PWA) so popup works there.
+    window.open(window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'signin=1', '_blank');
   } else {
-    // Browser (Safari, Chrome, desktop) - popup works perfectly
     firebase.auth().signInWithPopup(provider).catch(function(err) {
       alert('Sign-in failed: ' + err.message);
     });
@@ -1656,4 +1650,32 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 </div>
 
 </body>
-</html>
+</html>// Check if this page was opened from iOS PWA to complete sign-in
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('signin') === '1') {
+    var provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).then(function() {
+      document.body.style.background = '#B01E24';
+      document.body.innerHTML = '<div style="font-family:-apple-system,sans-serif;padding:40px;text-align:center;color:#fff;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
+        '<div style="font-size:56px;margin-bottom:16px;">✅</div>' +
+        '<div style="font-size:22px;font-weight:800;margin-bottom:12px;">Signed in successfully!</div>' +
+        '<div style="font-size:15px;opacity:.8;line-height:1.6;">Return to the PTO Ledger app<br>on your home screen.</div>' +
+        '</div>';
+    }).catch(function(err) {
+      alert('Sign-in failed: ' + err.message);
+    });
+    return;
+  }
+  // Normal load — handle any redirect result quietly
+  firebase.auth().getRedirectResult().catch(function(err) {
+    if (err.code && err.code !== 'auth/no-auth-event') {
+      console.error('Auth error:', err.code);
+    }
+  });
+  // Show tip when running as installed PWA
+  if (window.navigator.standalone === true) {
+    var note = document.getElementById('pwa-note');
+    if (note) note.style.display = 'block';
+  }
+})();
