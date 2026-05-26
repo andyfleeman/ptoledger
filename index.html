@@ -675,25 +675,6 @@ const isDesktop = () => window.innerWidth >= 769;
 // ── FIREBASE INIT ─────────────────────────────────────────────────────
 firebase.initializeApp(FIREBASE_CONFIG);
 db = firebase.firestore();
-// Clear any stale/invalid Gemini key from localStorage
-localStorage.removeItem('pto_gemini_key');
-
-// Set persistence to LOCAL so auth state survives iOS Safari ITP restrictions
-// LOCAL uses localStorage (not cookies) which iOS Safari preserves
-firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function() {
-  // Handle redirect result AFTER persistence is set
-  // This fires when returning from Google's OAuth page
-  return firebase.auth().getRedirectResult();
-}).then(function(result) {
-  // If we got a user from redirect, onAuthStateChanged will handle it
-  if (result && result.user) {
-    console.log('Signed in via redirect:', result.user.email);
-  }
-}).catch(function(err) {
-  if (err.code && err.code !== 'auth/no-auth-event') {
-    console.error('Auth error:', err.code, err.message);
-  }
-});
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
@@ -710,13 +691,8 @@ firebase.auth().onAuthStateChanged(user => {
 
 // ── AUTH ──────────────────────────────────────────────────────────────
 function signInWithGoogle() {
-  const provider = new firebase.auth.GoogleAuthProvider();
-  // signInWithRedirect works universally:
-  // - iOS Safari browser: navigates to Google, returns to app signed in
-  // - iOS PWA standalone: same flow, localStorage preserves auth state
-  // - Desktop Chrome/Firefox: same redirect flow
-  // signInWithPopup fails silently in iOS Safari due to cross-origin popup blocking
-  firebase.auth().signInWithRedirect(provider).catch(function(err) {
+  var provider = new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(provider).catch(function(err) {
     alert('Sign-in failed: ' + err.message);
   });
 }
@@ -1566,6 +1542,12 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 
 </div>
 
+
+`;
+}
+
+</script>
+
 <!-- EMAIL STATEMENT MODAL -->
 <div class="modal-overlay hidden" id="email-modal" onclick="overlayClose(event,'email-modal')">
   <div class="modal" style="max-height:95vh;">
@@ -1626,33 +1608,8 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
   </div>
 </div>
 
+
+
+
 </body>
-</html>// Check if this page was opened from iOS PWA to complete sign-in
-(function() {
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('signin') === '1') {
-    var provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider).then(function() {
-      document.body.style.background = '#B01E24';
-      document.body.innerHTML = '<div style="font-family:-apple-system,sans-serif;padding:40px;text-align:center;color:#fff;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
-        '<div style="font-size:56px;margin-bottom:16px;">✅</div>' +
-        '<div style="font-size:22px;font-weight:800;margin-bottom:12px;">Signed in successfully!</div>' +
-        '<div style="font-size:15px;opacity:.8;line-height:1.6;">Return to the PTO Ledger app<br>on your home screen.</div>' +
-        '</div>';
-    }).catch(function(err) {
-      alert('Sign-in failed: ' + err.message);
-    });
-    return;
-  }
-  // Normal load — handle any redirect result quietly
-  firebase.auth().getRedirectResult().catch(function(err) {
-    if (err.code && err.code !== 'auth/no-auth-event') {
-      console.error('Auth error:', err.code);
-    }
-  });
-  // Show tip when running as installed PWA
-  if (window.navigator.standalone === true) {
-    var note = document.getElementById('pwa-note');
-    if (note) note.style.display = 'block';
-  }
-})();
+</html>
