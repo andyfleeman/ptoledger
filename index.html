@@ -56,8 +56,8 @@ body{background:var(--page);}
 .mob-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 90px;}
 
 /* MOBILE FAB */
-.fab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+22px);left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(176,30,36,.45);z-index:100;transition:transform .15s,opacity .15s;}
-.fab:active{transform:translateX(-50%) scale(.93);}
+.fab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+28px);right:20px;width:56px;height:56px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(176,30,36,.45);z-index:50;transition:transform .15s;}
+.fab:active{transform:scale(.93);}
 
 /* ══════════════════════════════════════════════
    DESKTOP LAYOUT (≥769px)
@@ -401,6 +401,18 @@ input[type=file]{display:none;}
         <div style="flex:1;min-width:0;"><div class="account-name" id="mob-acct-name">Not signed in</div><div class="account-email" id="mob-acct-email"></div></div>
         <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
       </div>
+      <div class="section-hdr"><div class="section-title">Gemini AI Key</div></div>
+      <div class="export-card" style="margin-bottom:14px;">
+        <div style="padding:14px 16px;">
+          <div style="font-size:12px;font-weight:700;color:var(--gray4);margin-bottom:8px;">Paste your Gemini API key to enable receipt scanning</div>
+          <div style="display:flex;gap:8px;">
+            <input id="gemini-key-input" type="password" placeholder="AIzaSy…" autocomplete="off" style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:13px;font-family:var(--font);background:var(--gray1);outline:none;">
+            <button onclick="saveGeminiKeyFromInput()" style="padding:10px 14px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);flex-shrink:0;">Save</button>
+          </div>
+          <div id="gemini-key-status" style="font-size:12px;margin-top:6px;font-weight:600;"></div>
+          <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:12px;color:var(--blue);text-decoration:none;display:block;margin-top:4px;">→ Get a free key at Google AI Studio</a>
+        </div>
+      </div>
       <div class="section-hdr"><div class="section-title">Email Statement</div></div>
       <div class="export-card" style="margin-bottom:14px;">
         <div class="export-row" onclick="openEmailModal()">
@@ -508,6 +520,20 @@ input[type=file]{display:none;}
 
       <!-- EXPORT PANEL -->
       <div id="desk-tab-export" style="display:none;">
+        <div style="margin-bottom:20px;">
+          <div class="section-title" style="margin-bottom:12px;">Gemini AI Key</div>
+          <div class="desk-export-card" style="cursor:default;gap:12px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:200px;">
+              <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Receipt scanner API key</div>
+              <div style="display:flex;gap:8px;">
+                <input id="desk-gemini-key-input" type="password" placeholder="AIzaSy…" autocomplete="off" style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:13px;font-family:var(--font);background:var(--gray1);outline:none;">
+                <button onclick="saveGeminiKeyFromInput()" style="padding:10px 16px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">Save</button>
+              </div>
+              <div id="desk-gemini-key-status" style="font-size:12px;margin-top:4px;font-weight:600;"></div>
+            </div>
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:12px;color:var(--blue);text-decoration:none;white-space:nowrap;align-self:center;">→ Get a free key</a>
+          </div>
+        </div>
         <div style="margin-bottom:16px;">
           <div class="section-title" style="margin-bottom:12px;">Email Statement</div>
           <div class="desk-export-grid" style="grid-template-columns:1fr;">
@@ -587,7 +613,7 @@ const FIREBASE_CONFIG = {
   appId: "1:1007406356125:web:0ca924ffaab406da752674",
   measurementId: "G-DXHX495PN0"
 };
-const GEMINI_KEY = "AIzaSyAJsDeZ3paTwHl5CSRsE3-I0fntZ1Trddc";
+const GEMINI_KEY = localStorage.getItem("pto_gemini_key") || "";
 
 // ── STATE ─────────────────────────────────────────────────────────────
 let activeTab = 'bps', activeType = 'income';
@@ -954,11 +980,13 @@ async function scanWithGemini(base64, mimeType) {
 
   const prompt = 'You are a receipt scanner for a school PTO accounting app. Carefully analyze this receipt or deposit slip.' + correctionExamples + ' Respond ONLY with valid JSON, no markdown, no backticks, no explanation. Format exactly: {"amount":<final total as number or null>,"vendor":"<business or store name only, e.g. Walmart, Dollar Tree, null if not visible>","description":"<brief purpose max 4 words, e.g. Supplies, Pizza Party, Book Fair>","date":"<YYYY-MM-DD or null if not visible>"}';
   // Try primary model, fall back to alternate if needed
+  const apiKey = localStorage.getItem('pto_gemini_key') || '';
+  if (!apiKey) throw new Error('No Gemini API key set. Go to the Export tab and paste your key.');
   const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
   let resp, lastErr;
   for (const model of models) {
     try {
-      resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`, {
+      resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: base64 } }, { text: prompt }] }], generationConfig: { temperature: 0, maxOutputTokens: 300 } })
       });
@@ -1094,6 +1122,40 @@ function exportCSV(which) {
 
 // ── CLOCK ─────────────────────────────────────────────────────────────
 // Clock removed (status bar removed)
+
+// ── GEMINI KEY MANAGEMENT ─────────────────────
+function saveGeminiKeyFromInput() {
+  const mobInput = document.getElementById('gemini-key-input');
+  const deskInput = document.getElementById('desk-gemini-key-input');
+  const key = (mobInput?.value || deskInput?.value || '').trim();
+  if (!key || key.length < 20) {
+    const msg = 'Please paste a valid Gemini API key.';
+    if (document.getElementById('gemini-key-status')) document.getElementById('gemini-key-status').textContent = msg;
+    if (document.getElementById('desk-gemini-key-status')) document.getElementById('desk-gemini-key-status').textContent = msg;
+    return;
+  }
+  localStorage.setItem('pto_gemini_key', key);
+  if (mobInput) mobInput.value = '';
+  if (deskInput) deskInput.value = '';
+  const successMsg = '✅ Key saved! Receipt scanning is ready.';
+  const errColor = 'var(--green)';
+  if (document.getElementById('gemini-key-status')) {
+    document.getElementById('gemini-key-status').textContent = successMsg;
+    document.getElementById('gemini-key-status').style.color = errColor;
+  }
+  if (document.getElementById('desk-gemini-key-status')) {
+    document.getElementById('desk-gemini-key-status').textContent = successMsg;
+    document.getElementById('desk-gemini-key-status').style.color = errColor;
+  }
+  setTimeout(() => {
+    if (document.getElementById('gemini-key-status')) document.getElementById('gemini-key-status').textContent = '';
+    if (document.getElementById('desk-gemini-key-status')) document.getElementById('desk-gemini-key-status').textContent = '';
+  }, 3000);
+}
+
+function getGeminiKey() {
+  return localStorage.getItem('pto_gemini_key') || '';
+}
 
 
 // ══════════════════════════════════════════════
