@@ -1345,8 +1345,7 @@ async function sendBalanceEmail() {
 
   // Get recipients from cache
   const recipients = _mailingList.map(r => r.email);
-  if (!recipients.length) { alert('Please add at least one recipient.
-Tap "Edit List" in the Mailing List section to add recipients.'); return; }
+  if (!recipients.length) { alert('Please add at least one recipient. Use Edit List to add some.'); return; }
 
   btn.disabled = true;
   btnLabel.textContent = 'Building statement…';
