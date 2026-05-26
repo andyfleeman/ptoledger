@@ -724,7 +724,7 @@ async function checkAccess(user) {
   }
 }
 
-onAuthStateChanged(async user => {
+firebase.auth().onAuthStateChanged(async user => {
   if (user) {
     const allowed = await checkAccess(user);
     if (!allowed) {
