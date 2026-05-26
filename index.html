@@ -428,18 +428,23 @@ input[type=file]{display:none;}
         <div style="flex:1;min-width:0;"><div class="account-name" id="mob-acct-name">Not signed in</div><div class="account-email" id="mob-acct-email"></div></div>
         <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
       </div>
-      <div class="section-hdr"><div class="section-title">Gemini AI Key</div></div>
-      <div class="export-card" style="margin-bottom:14px;">
+
+      <div class="section-hdr"><div class="section-title">Mailing List</div></div>
+      <div style="background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);margin-bottom:14px;">
+        <div id="mob-mailing-list-items" style="padding:12px 16px 0;"></div>
         <div style="padding:14px 16px;">
-          <div style="font-size:12px;font-weight:700;color:var(--gray4);margin-bottom:8px;">Paste your Gemini API key to enable receipt scanning</div>
+          <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Add Recipient</div>
+          <input id="mob-ml-name" type="text" placeholder="Name (optional)"
+            style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);margin-bottom:8px;outline:none;-webkit-appearance:none;box-sizing:border-box;">
           <div style="display:flex;gap:8px;">
-            <input id="gemini-key-input" type="password" placeholder="AIzaSy…" autocomplete="off" style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:13px;font-family:var(--font);background:var(--gray1);outline:none;">
-            <button onclick="saveGeminiKeyFromInput()" style="padding:10px 14px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);flex-shrink:0;">Save</button>
+            <input id="mob-ml-email" type="email" placeholder="Email address"
+              style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;-webkit-appearance:none;">
+            <button onclick="mlAdd()" style="padding:10px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;">Add</button>
           </div>
-          <div id="gemini-key-status" style="font-size:12px;margin-top:6px;font-weight:600;"></div>
-          <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:12px;color:var(--blue);text-decoration:none;display:block;margin-top:4px;">→ Get a free key at Google AI Studio</a>
+          <div id="mob-ml-status" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
         </div>
       </div>
+
       <div class="section-hdr"><div class="section-title">Email Statement</div></div>
       <div class="export-card" style="margin-bottom:14px;">
         <div class="export-row" onclick="openEmailModal()">
@@ -547,18 +552,24 @@ input[type=file]{display:none;}
 
       <!-- EXPORT PANEL -->
       <div id="desk-tab-export" style="display:none;">
-        <div style="margin-bottom:20px;">
-          <div class="section-title" style="margin-bottom:12px;">Gemini AI Key</div>
-          <div class="desk-export-card" style="cursor:default;gap:12px;flex-wrap:wrap;">
-            <div style="flex:1;min-width:200px;">
-              <div style="font-size:13px;font-weight:600;margin-bottom:6px;">Receipt scanner API key</div>
-              <div style="display:flex;gap:8px;">
-                <input id="desk-gemini-key-input" type="password" placeholder="AIzaSy…" autocomplete="off" style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:13px;font-family:var(--font);background:var(--gray1);outline:none;">
-                <button onclick="saveGeminiKeyFromInput()" style="padding:10px 16px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">Save</button>
+        <div style="margin-bottom:24px;">
+          <div class="section-title" style="margin-bottom:12px;">Mailing List</div>
+          <div style="background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);padding:20px;">
+            <div id="desk-mailing-list-items" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+            <div style="display:grid;grid-template-columns:1fr 1.5fr auto;gap:10px;align-items:end;">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Name (optional)</div>
+                <input id="desk-ml-name" type="text" placeholder="e.g. Jane Smith" autocomplete="name"
+                  style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;box-sizing:border-box;">
               </div>
-              <div id="desk-gemini-key-status" style="font-size:12px;margin-top:4px;font-weight:600;"></div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Email Address</div>
+                <input id="desk-ml-email" type="email" placeholder="email@example.com" autocomplete="email"
+                  style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;box-sizing:border-box;">
+              </div>
+              <button onclick="mlAdd()" style="padding:10px 20px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);white-space:nowrap;">+ Add</button>
             </div>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" style="font-size:12px;color:var(--blue);text-decoration:none;white-space:nowrap;align-self:center;">→ Get a free key</a>
+            <div id="desk-ml-status" style="font-size:12px;margin-top:8px;font-weight:600;min-height:16px;"></div>
           </div>
         </div>
         <div style="margin-bottom:16px;">
@@ -666,11 +677,12 @@ db = firebase.firestore();
 // Clear any stale/invalid Gemini key from localStorage
 localStorage.removeItem('pto_gemini_key');
 
-// Handle redirect result from PWA sign-in
-firebase.auth().getRedirectResult().catch(err => {
-  if (err.code !== 'auth/no-auth-event') {
-    console.error('Redirect sign-in error:', err);
-    alert('Sign-in failed: ' + err.message);
+// Handle redirect sign-in result on page load
+firebase.auth().getRedirectResult().then(function(result) {
+  // onAuthStateChanged handles the user session automatically
+}).catch(function(err) {
+  if (err.code && err.code !== 'auth/no-auth-event' && err.code !== 'auth/null-user') {
+    console.error('Redirect error:', err.code, err.message);
   }
 });
 
@@ -690,13 +702,15 @@ firebase.auth().onAuthStateChanged(user => {
 // ── AUTH ──────────────────────────────────────────────────────────────
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  // Use redirect in standalone PWA mode (iOS home screen) - popups are blocked there
-  const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
-  if (isStandalone) {
-    firebase.auth().signInWithRedirect(provider).catch(err => alert('Sign-in failed: ' + err.message));
-  } else {
-    firebase.auth().signInWithPopup(provider).catch(err => alert('Sign-in failed: ' + err.message));
-  }
+  // Always use redirect - works in PWA, browser, iOS, Android
+  firebase.auth().signInWithRedirect(provider).catch(function(err) {
+    // Popup fallback for environments that block redirect
+    if (err.code === 'auth/operation-not-supported-in-this-environment') {
+      firebase.auth().signInWithPopup(provider).catch(function(e2) { alert('Sign-in failed: ' + e2.message); });
+    } else {
+      alert('Sign-in failed: ' + err.message);
+    }
+  });
 }
 function doSignOut() {
   if (!confirm('Sign out of PTO Ledger?')) return;
@@ -894,7 +908,7 @@ function switchTab(tab) {
   document.getElementById('pill-bes').className = 'pill' + (tab === 'bes' ? ' active' : '');
   document.getElementById('pill-export').className = 'pill-export' + (tab === 'export' ? ' active' : '');
   activeTab = tab;
-
+  if (tab === 'export') loadRecipients();
   document.getElementById('mob-scroll').scrollTop = 0;
 }
 
@@ -910,6 +924,7 @@ function deskTab(tab) {
   document.getElementById('desk-topbar-sub').textContent = titles[tab][1];
   document.getElementById('desk-sidebar-summary').style.display = (tab === 'export') ? 'none' : 'block';
   if (tab !== 'export') updateSidebarSummary(tab, cachedData[tab]);
+  if (tab === 'export') loadRecipients();
   document.getElementById('desk-content').scrollTop = 0;
 }
 
@@ -1276,9 +1291,9 @@ let gmailAccessToken = null;
 function openEmailModal() {
   setEmailSchool('bps');
   setDatePreset('this-month');
-  loadRecipients();
+  loadRecipients(); // refresh mailing list preview
   document.getElementById('send-status').textContent = '';
-  document.getElementById('send-btn-label').textContent = 'Send Statement';
+  document.getElementById('send-btn-label').textContent = 'Open in Mail App';
   document.getElementById('send-email-btn').disabled = false;
   document.getElementById('email-modal').classList.remove('hidden');
 }
@@ -1320,138 +1335,145 @@ async function loadRecipients() {
     const snap = await db.collection('users').doc(currentUser.uid).collection('mailingList').get();
     _mailingList = [];
     snap.forEach(doc => _mailingList.push({ id: doc.id, ...doc.data() }));
-    _mailingList.sort((a,b) => (a.added||'').localeCompare(b.added||''));
+    _mailingList.sort((a, b) => (a.added || '').localeCompare(b.added || ''));
+    renderMailingList();
     renderRecipientPreview();
   } catch(e) {
     console.error('loadRecipients error:', e);
-    const el = document.getElementById('recipient-preview');
-    if (el) el.innerHTML = '<div style="font-size:13px;color:var(--gray3);">Could not load list: ' + e.message + '</div>';
   }
 }
 
-function renderRecipientPreview() {
-  const el = document.getElementById('recipient-preview');
+// Render mailing list into ANY container using DOM (no innerHTML/template literal issues)
+function renderMailingListInto(container) {
+  if (!container) return;
+  container.innerHTML = '';
   if (!_mailingList.length) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--gray3);">No recipients yet — tap Edit List to add some.</div>';
+    const empty = document.createElement('div');
+    empty.style.cssText = 'font-size:13px;color:var(--gray3);padding:12px 0;text-align:center;';
+    empty.textContent = 'No recipients yet — add one below.';
+    container.appendChild(empty);
     return;
   }
-  el.innerHTML = _mailingList.map(r => `
-    <div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:.5px solid var(--gray2);">
-      <span style="font-size:14px;">👤</span>
-      <div style="flex:1;min-width:0;">
-        ${r.name ? `<div style="font-size:13px;font-weight:600;color:var(--black);">${esc(r.name)}</div>` : ''}
-        <div style="font-size:12px;color:var(--gray4);${r.name?'':'font-size:13px;font-weight:600;color:var(--black);'}">${esc(r.email)}</div>
-      </div>
-    </div>`).join('') + `<div style="font-size:11px;color:var(--gray3);margin-top:6px;">${_mailingList.length} recipient${_mailingList.length!==1?'s':''}</div>`;
-}
-
-async function openMailingListModal() {
-  // Show modal immediately
-  const modal = document.getElementById('mailing-list-modal');
-  modal.classList.remove('hidden');
-  // Reset form
-  document.getElementById('ml-name-input').value = '';
-  document.getElementById('ml-email-input').value = '';
-  document.getElementById('ml-status').textContent = '';
-  document.getElementById('mailing-list-items').innerHTML = '<div style="font-size:13px;color:var(--gray3);text-align:center;padding:16px 0;">Loading…</div>';
-  // Load fresh from Firestore then render
-  await loadRecipients();
-  renderMailingListModal();
-}
-
-function renderMailingListModal() {
-  const el = document.getElementById('mailing-list-items');
-  if (!_mailingList.length) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--gray3);text-align:center;padding:16px 0;">No recipients yet — add one below.</div>';
-    return;
-  }
-  // Build using DOM, not innerHTML template literals, to avoid all quote/ID issues
-  el.innerHTML = '';
-  _mailingList.forEach(r => {
+  _mailingList.forEach(function(r) {
     const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:10px;background:var(--gray1);border-radius:12px;padding:12px 14px;margin-bottom:8px;';
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:.5px solid var(--gray2);';
     const info = document.createElement('div');
     info.style.cssText = 'flex:1;min-width:0;';
     if (r.name) {
-      const nameDiv = document.createElement('div');
-      nameDiv.style.cssText = 'font-size:14px;font-weight:700;color:var(--black);';
-      nameDiv.textContent = r.name;
-      info.appendChild(nameDiv);
+      const nd = document.createElement('div');
+      nd.style.cssText = 'font-size:14px;font-weight:600;color:var(--black);';
+      nd.textContent = r.name;
+      info.appendChild(nd);
     }
-    const emailDiv = document.createElement('div');
-    emailDiv.style.cssText = 'font-size:' + (r.name ? '12' : '14') + 'px;color:' + (r.name ? 'var(--gray4)' : 'var(--black)') + ';font-weight:' + (r.name ? '500' : '600') + ';word-break:break-all;';
-    emailDiv.textContent = r.email;
-    info.appendChild(emailDiv);
+    const ed = document.createElement('div');
+    ed.style.cssText = 'font-size:' + (r.name ? '12' : '14') + 'px;color:' + (r.name ? 'var(--gray4)' : 'var(--black)') + ';word-break:break-all;';
+    ed.textContent = r.email;
+    info.appendChild(ed);
     row.appendChild(info);
     const btn = document.createElement('button');
     btn.textContent = 'Remove';
-    btn.style.cssText = 'background:var(--red-light);border:1.5px solid var(--red-mid);color:var(--red);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:var(--font);transition:all .15s;';
-    btn.onmouseover = () => { btn.style.background = 'var(--red)'; btn.style.color = '#fff'; };
-    btn.onmouseout = () => { btn.style.background = 'var(--red-light)'; btn.style.color = 'var(--red)'; };
-    btn.onclick = () => mlRemoveRecipient(r.id);
+    btn.style.cssText = 'background:var(--red-light);border:1.5px solid var(--red-mid);color:var(--red);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);flex-shrink:0;transition:all .15s;';
+    btn.addEventListener('mouseover', function() { btn.style.background = 'var(--red)'; btn.style.color = '#fff'; });
+    btn.addEventListener('mouseout', function() { btn.style.background = 'var(--red-light)'; btn.style.color = 'var(--red)'; });
+    btn.addEventListener('click', function() { mlRemove(r.id, r.name || r.email); });
     row.appendChild(btn);
-    el.appendChild(row);
+    container.appendChild(row);
   });
 }
 
-async function mlAddRecipient() {
-  const nameEl = document.getElementById('ml-name-input');
-  const emailEl = document.getElementById('ml-email-input');
-  const statusEl = document.getElementById('ml-status');
-  if (!nameEl || !emailEl || !statusEl) return;
+function renderMailingList() {
+  // Render into both mobile and desktop containers
+  var mob = document.getElementById('mob-mailing-list-items');
+  var desk = document.getElementById('desk-mailing-list-items');
+  renderMailingListInto(mob);
+  renderMailingListInto(desk);
+}
 
-  const name = nameEl.value.trim();
-  const email = emailEl.value.trim().toLowerCase();
+function renderRecipientPreview() {
+  var el = document.getElementById('recipient-preview');
+  if (!el) return;
+  if (!_mailingList.length) {
+    el.innerHTML = '<div style="font-size:13px;color:var(--gray3);">No recipients yet — add some in the Export tab.</div>';
+    return;
+  }
+  var lines = _mailingList.map(function(r) {
+    return '<div style="font-size:13px;padding:4px 0;border-bottom:.5px solid var(--gray2);last-child:border:none;">' +
+      (r.name ? '<span style="font-weight:600;">' + r.name + '</span> &lt;' + r.email + '&gt;' : r.email) +
+      '</div>';
+  });
+  el.innerHTML = lines.join('') + '<div style="font-size:11px;color:var(--gray3);margin-top:6px;">' + _mailingList.length + ' recipient' + (_mailingList.length !== 1 ? 's' : '') + '</div>';
+}
 
-  // Validate
+// mlAdd - works from both mobile (mob-ml-*) and desktop (desk-ml-*) inputs
+async function mlAdd() {
+  // Figure out which inputs to use based on which are visible/focused
+  var nameEl = document.getElementById('mob-ml-name') || document.getElementById('desk-ml-name');
+  var emailEl = document.getElementById('mob-ml-email') || document.getElementById('desk-ml-email');
+  var statusEl = document.getElementById('mob-ml-status') || document.getElementById('desk-ml-status');
+
+  // Prefer the one with a value
+  var mobName = document.getElementById('mob-ml-name');
+  var deskName = document.getElementById('desk-ml-name');
+  var mobEmail = document.getElementById('mob-ml-email');
+  var deskEmail = document.getElementById('desk-ml-email');
+  var mobStatus = document.getElementById('mob-ml-status');
+  var deskStatus = document.getElementById('desk-ml-status');
+
+  // Determine which layout triggered the add
+  var isMob = (mobEmail && mobEmail.value.trim()) || window.innerWidth < 769;
+  nameEl = isMob ? mobName : deskName;
+  emailEl = isMob ? mobEmail : deskEmail;
+  statusEl = isMob ? mobStatus : deskStatus;
+
+  if (!emailEl) return;
+  var name = nameEl ? nameEl.value.trim() : '';
+  var email = emailEl.value.trim().toLowerCase();
+
+  function setStatus(msg, ok) {
+    if (mobStatus) { mobStatus.textContent = msg; mobStatus.style.color = ok ? 'var(--green)' : 'var(--expense)'; }
+    if (deskStatus) { deskStatus.textContent = msg; deskStatus.style.color = ok ? 'var(--green)' : 'var(--expense)'; }
+    if (ok) setTimeout(function() { if (mobStatus) mobStatus.textContent = ''; if (deskStatus) deskStatus.textContent = ''; }, 3000);
+  }
+
   if (!email || !email.includes('@') || !email.includes('.')) {
-    statusEl.style.color = 'var(--expense)';
-    statusEl.textContent = 'Please enter a valid email address.';
+    setStatus('Please enter a valid email address.', false);
     emailEl.focus();
     return;
   }
-  if (_mailingList.find(r => r.email === email)) {
-    statusEl.style.color = 'var(--expense)';
-    statusEl.textContent = email + ' is already on the list.';
+  if (_mailingList.find(function(r) { return r.email === email; })) {
+    setStatus(email + ' is already on the list.', false);
     return;
   }
 
-  // Disable button during save
-  const addBtn = document.getElementById('ml-add-btn');
-  if (addBtn) { addBtn.disabled = true; addBtn.textContent = 'Adding…'; }
-  statusEl.textContent = '';
-
   try {
-    const docData = { email, added: new Date().toISOString() };
+    var docData = { email: email, added: new Date().toISOString() };
     if (name) docData.name = name;
-    const ref = await db.collection('users').doc(currentUser.uid).collection('mailingList').add(docData);
-    _mailingList.push({ id: ref.id, ...docData });
-    _mailingList.sort((a,b) => (a.added||'').localeCompare(b.added||''));
-    nameEl.value = '';
+    var ref = await db.collection('users').doc(currentUser.uid).collection('mailingList').add(docData);
+    _mailingList.push({ id: ref.id, email: email, name: name || null, added: docData.added });
+    _mailingList.sort(function(a, b) { return (a.added || '').localeCompare(b.added || ''); });
+    if (nameEl) nameEl.value = '';
     emailEl.value = '';
-    statusEl.style.color = 'var(--green)';
-    statusEl.textContent = '✅ ' + (name ? name + ' (' + email + ')' : email) + ' added!';
-    setTimeout(() => { statusEl.textContent = ''; }, 3000);
-    renderMailingListModal();
+    setStatus('✅ ' + (name ? name + ' (' + email + ')' : email) + ' added!', true);
+    renderMailingList();
     renderRecipientPreview();
     emailEl.focus();
   } catch(e) {
-    statusEl.style.color = 'var(--expense)';
-    statusEl.textContent = 'Error: ' + e.message;
-  } finally {
-    if (addBtn) { addBtn.disabled = false; addBtn.textContent = '+ Add to List'; }
+    setStatus('Error saving: ' + e.message, false);
   }
 }
 
-async function mlRemoveRecipient(id) {
-  if (!confirm('Remove this recipient from your mailing list?')) return;
+async function mlRemove(id, label) {
+  if (!confirm('Remove ' + label + ' from the mailing list?')) return;
   try {
     await db.collection('users').doc(currentUser.uid).collection('mailingList').doc(id).delete();
-    _mailingList = _mailingList.filter(r => r.id !== id);
-    renderMailingListModal();
+    _mailingList = _mailingList.filter(function(r) { return r.id !== id; });
+    renderMailingList();
     renderRecipientPreview();
-  } catch(e) { alert('Could not remove: ' + e.message); }
+  } catch(e) {
+    alert('Could not remove: ' + e.message);
+  }
 }
+
 
 // Gmail API replaced with mailto
 
@@ -1536,156 +1558,6 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 
 </div>
 
-<!-- MAILING LIST MODAL -->
-<div class="modal-overlay hidden" id="mailing-list-modal" onclick="overlayClose(event,'mailing-list-modal')" style="z-index:300;">
-  <div class="modal">
-    <div class="modal-handle"></div>
-    <div class="modal-head">
-      <div class="modal-title">📋 Mailing List</div>
-      <button class="modal-close-x" onclick="closeModal('mailing-list-modal')">✕</button>
-    </div>
-    <div class="modal-body">
-      <div id="mailing-list-items" style="margin-bottom:16px;display:flex;flex-direction:column;gap:8px;"></div>
-      <div style="font-size:12px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Add New Recipient</div>
-      <div style="display:flex;gap:8px;margin-bottom:6px;">
-        <input class="add-recipient-input" id="ml-name-input" type="text" placeholder="Name (optional)" autocomplete="name" style="flex:1;">
-        <input class="add-recipient-input" id="ml-email-input" type="email" placeholder="Email address" autocomplete="email" style="flex:1.4;">
-      </div>
-      <button class="add-recipient-btn" id="ml-add-btn" style="width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:800;margin-top:4px;" onclick="mlAddRecipient()">+ Add to List</button>
-      <div id="ml-status" style="font-size:12px;text-align:center;margin-top:8px;font-weight:600;min-height:16px;"></div>
-    </div>
-  </div>
-</div>
-
-</body>
-</html>`;
-}
-
-// sendViaGmail replaced with mailto
-
-// ── MAIN SEND FUNCTION (mailto) ───────────────
-async function sendBalanceEmail() {
-  const fromDate = document.getElementById('em-date-from').value;
-  const toDate = document.getElementById('em-date-to').value;
-  const statusEl = document.getElementById('send-status');
-  const btn = document.getElementById('send-email-btn');
-  const btnLabel = document.getElementById('send-btn-label');
-
-  if (!fromDate || !toDate) { alert('Please select a date range.'); return; }
-  if (fromDate > toDate) { alert('Start date must be before end date.'); return; }
-
-  // Get recipients from cache
-  const recipients = _mailingList.map(r => r.email);
-  if (!recipients.length) { alert('Please add at least one recipient. Use Edit List to add some.'); return; }
-
-  btn.disabled = true;
-  btnLabel.textContent = 'Building statement…';
-  statusEl.textContent = '';
-  statusEl.className = 'send-status';
-
-  try {
-    const fmtD = s => { if(!s)return''; const[y,m,d]=s.split('-'); const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return mn[parseInt(m)-1]+' '+parseInt(d)+', '+y; };
-    const fmtCur = n => '$' + Math.abs(parseFloat(n)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-
-    const schools = emailSchool === 'both' ? ['bps','bes'] : [emailSchool];
-    const schoolNames = { bps: 'Primary (BPS)', bes: 'Elementary (BES)' };
-
-    // Build plain-text body for mailto (HTML not supported in mailto)
-    let body = `BROOKLAND PUBLIC SCHOOLS — PTO BALANCE STATEMENT
-`;
-    body += `${'='.repeat(50)}
-`;
-    body += `Period: ${fmtD(fromDate)} to ${fmtD(toDate)}
-`;
-    body += `Generated: ${new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'})}
-
-`;
-
-    for (const school of schools) {
-      const snap = await db.collection('users').doc(currentUser.uid)
-        .collection(school).orderBy('date','asc').get();
-
-      let currentBal = 0, periodInc = 0, periodExp = 0;
-      const periodTx = [];
-
-      snap.forEach(doc => {
-        const t = { id: doc.id, ...doc.data() };
-        if (t.type === 'income') currentBal += t.amount;
-        else currentBal -= t.amount;
-        if (t.date >= fromDate && t.date <= toDate) {
-          periodTx.push(t);
-          if (t.type === 'income') periodInc += t.amount;
-          else periodExp += t.amount;
-        }
-      });
-
-      body += `${schoolNames[school] || school.toUpperCase()}
-`;
-      body += `${'-'.repeat(40)}
-`;
-      body += `Current Balance:  ${fmtCur(currentBal)}
-`;
-      body += `Period Deposits:  +${fmtCur(periodInc)}
-`;
-      body += `Period Expenses:  -${fmtCur(periodExp)}
-`;
-      body += `Net Change:       ${(periodInc-periodExp)>=0?'+':''}${fmtCur(periodInc-periodExp)}
-
-`;
-
-      if (periodTx.length) {
-        body += `TRANSACTIONS (${periodTx.length}):
-`;
-        periodTx.forEach(t => {
-          const sign = t.type === 'income' ? '+' : '-';
-          const vendor = t.vendor ? ` [${t.vendor}]` : '';
-          body += `  ${t.date}  ${sign}${fmtCur(t.amount)}  ${t.desc}${vendor}
-`;
-        });
-      } else {
-        body += `No transactions in this period.
-`;
-      }
-      body += `
-`;
-    }
-
-    body += `${'='.repeat(50)}
-`;
-    body += `Brookland PTO Ledger · Brookland, Arkansas
-`;
-
-    const subject = `Brookland PTO Balance Statement — ${fmtD(fromDate)} to ${fmtD(toDate)}`;
-
-    // Build mailto link
-    const mailtoTo = recipients.join(',');
-    const mailtoLink = `mailto:${encodeURIComponent(mailtoTo)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
-    // Open mail app
-    window.location.href = mailtoLink;
-
-    btnLabel.textContent = 'Send Statement';
-    btn.disabled = false;
-    statusEl.textContent = `✅ Your mail app should open — tap Send to deliver to ${recipients.length} recipient${recipients.length>1?'s':''}!`;
-    statusEl.className = 'send-status ok';
-
-  } catch(err) {
-    btn.disabled = false;
-    btnLabel.textContent = 'Send Statement';
-    statusEl.textContent = '❌ ' + err.message;
-    statusEl.className = 'send-status bad';
-    console.error('Email error:', err);
-  }
-}
-
-// ── ENTER KEY on recipient input ─────────────
-document.addEventListener('DOMContentLoaded', () => {
-  const mlEmail = document.getElementById('ml-email-input');
-  if (mlEmail) mlEmail.addEventListener('keydown', e => { if (e.key === 'Enter') mlAddRecipient(); });
-});
-
-</script>
-
 <!-- EMAIL STATEMENT MODAL -->
 <div class="modal-overlay hidden" id="email-modal" onclick="overlayClose(event,'email-modal')">
   <div class="modal" style="max-height:95vh;">
@@ -1729,13 +1601,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
       <!-- MAILING LIST -->
       <div class="email-section">
-        <div class="email-section-title" style="display:flex;align-items:center;justify-content:space-between;">
-          Mailing List
-          <button onclick="openMailingListModal()" style="font-size:12px;font-weight:700;color:var(--red);background:none;border:none;cursor:pointer;font-family:var(--font);padding:0;">Edit List ›</button>
-        </div>
-        <div id="recipient-preview" style="background:var(--gray1);border-radius:12px;padding:12px 14px;">
+        <div class="email-section-title">Mailing List</div>
+        <div id="recipient-preview" style="background:var(--gray1);border-radius:12px;padding:12px 14px;margin-bottom:10px;">
           <div style="font-size:13px;color:var(--gray3);">Loading…</div>
         </div>
+        <div style="font-size:11px;color:var(--gray3);text-align:center;">Manage your mailing list in the Export tab</div>
       </div>
 
       <button class="send-btn" id="send-email-btn" onclick="sendBalanceEmail()">
