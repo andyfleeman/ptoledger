@@ -737,6 +737,7 @@ firebase.auth().onAuthStateChanged(async user => {
     updateUserUI(user);
     listenToLedger('bps');
     listenToLedger('bes');
+    loadAuthorizedUsers(); // show Manage Access section for admins on login
   } else {
     currentUser = null;
     document.getElementById('login-screen').classList.remove('hidden');
@@ -1627,14 +1628,15 @@ let _authorizedUsers = [];
 
 async function loadAuthorizedUsers() {
   if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email)) return;
+  // Show the section immediately — admin is confirmed, collection may just be empty
+  document.getElementById('mob-access-section').style.display = 'block';
+  document.getElementById('desk-access-section').style.display = 'block';
   try {
     const snap = await db.collection('pto').doc('brookland').collection('authorizedUsers').get();
     _authorizedUsers = [];
     snap.forEach(d => _authorizedUsers.push({ id: d.id, ...d.data() }));
     _authorizedUsers.sort((a,b) => (a.email||'').localeCompare(b.email||''));
     renderAccessList();
-    document.getElementById('mob-access-section').style.display = 'block';
-    document.getElementById('desk-access-section').style.display = 'block';
   } catch(e) {
     console.error('loadAuthorizedUsers:', e);
   }
