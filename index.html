@@ -677,12 +677,13 @@ db = firebase.firestore();
 // Clear any stale/invalid Gemini key from localStorage
 localStorage.removeItem('pto_gemini_key');
 
-// Handle redirect sign-in result on page load
+// Handle redirect result (iOS PWA sign-in return)
 firebase.auth().getRedirectResult().then(function(result) {
-  // onAuthStateChanged handles the user session automatically
+  // onAuthStateChanged fires automatically after successful redirect
 }).catch(function(err) {
-  if (err.code && err.code !== 'auth/no-auth-event' && err.code !== 'auth/null-user') {
-    console.error('Redirect error:', err.code, err.message);
+  // Ignore non-errors - no redirect in progress is normal
+  if (err.code && err.code !== 'auth/no-auth-event') {
+    console.error('Redirect result error:', err.code);
   }
 });
 
@@ -702,15 +703,18 @@ firebase.auth().onAuthStateChanged(user => {
 // ── AUTH ──────────────────────────────────────────────────────────────
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  // Always use redirect - works in PWA, browser, iOS, Android
-  firebase.auth().signInWithRedirect(provider).catch(function(err) {
-    // Popup fallback for environments that block redirect
-    if (err.code === 'auth/operation-not-supported-in-this-environment') {
-      firebase.auth().signInWithPopup(provider).catch(function(e2) { alert('Sign-in failed: ' + e2.message); });
-    } else {
+  // iOS standalone PWA blocks popups - use redirect there only
+  // All other environments (Chrome, Safari browser, desktop) use popup
+  const isIOSPWA = window.navigator.standalone === true;
+  if (isIOSPWA) {
+    firebase.auth().signInWithRedirect(provider).catch(function(err) {
       alert('Sign-in failed: ' + err.message);
-    }
-  });
+    });
+  } else {
+    firebase.auth().signInWithPopup(provider).catch(function(err) {
+      alert('Sign-in failed: ' + err.message);
+    });
+  }
 }
 function doSignOut() {
   if (!confirm('Sign out of PTO Ledger?')) return;
