@@ -400,7 +400,7 @@ input[type=file]{display:none;}
       </button>
       <div class="summary-grid">
         <div class="summary-card"><div class="s-label">Balance</div><div class="s-value bal" id="mob-bps-bal">$0.00</div></div>
-        <div class="summary-card"><div class="s-label">Income</div><div class="s-value inc" id="mob-bps-inc">$0.00</div></div>
+        <div class="summary-card"><div class="s-label">Deposits</div><div class="s-value inc" id="mob-bps-inc">$0.00</div></div>
         <div class="summary-card"><div class="s-label">Expenses</div><div class="s-value exp" id="mob-bps-exp">$0.00</div></div>
       </div>
       <div class="section-hdr"><div class="section-title">Transaction History</div><div style="font-size:12px;color:var(--gray3);font-weight:600;" id="mob-bps-count"></div></div>
@@ -414,7 +414,7 @@ input[type=file]{display:none;}
       </button>
       <div class="summary-grid">
         <div class="summary-card"><div class="s-label">Balance</div><div class="s-value bal" id="mob-bes-bal">$0.00</div></div>
-        <div class="summary-card"><div class="s-label">Income</div><div class="s-value inc" id="mob-bes-inc">$0.00</div></div>
+        <div class="summary-card"><div class="s-label">Deposits</div><div class="s-value inc" id="mob-bes-inc">$0.00</div></div>
         <div class="summary-card"><div class="s-label">Expenses</div><div class="s-value exp" id="mob-bes-exp">$0.00</div></div>
       </div>
       <div class="section-hdr"><div class="section-title">Transaction History</div><div style="font-size:12px;color:var(--gray3);font-weight:600;" id="mob-bes-count"></div></div>
@@ -492,7 +492,7 @@ input[type=file]{display:none;}
         <div class="desk-sum-value" id="desk-sb-bal">$0.00</div>
       </div>
       <div class="desk-sum-row">
-        <div class="desk-sum-small"><div class="desk-sum-label">Income</div><div class="desk-sum-value" id="desk-sb-inc">$0.00</div></div>
+        <div class="desk-sum-small"><div class="desk-sum-label">Deposits</div><div class="desk-sum-value" id="desk-sb-inc">$0.00</div></div>
         <div class="desk-sum-small"><div class="desk-sum-label">Expenses</div><div class="desk-sum-value" id="desk-sb-exp">$0.00</div></div>
       </div>
     </div>
@@ -528,7 +528,7 @@ input[type=file]{display:none;}
         <div class="sync-bar" id="desk-bps-sync"><div class="sync-dot"></div>Syncing with Firebase…</div>
         <div class="desk-stat-row">
           <div class="desk-stat-card"><div class="desk-stat-label">Balance</div><div class="desk-stat-value bal" id="desk-bps-bal">$0.00</div></div>
-          <div class="desk-stat-card"><div class="desk-stat-label">Total Income</div><div class="desk-stat-value inc" id="desk-bps-inc">$0.00</div></div>
+          <div class="desk-stat-card"><div class="desk-stat-label">Total Deposits</div><div class="desk-stat-value inc" id="desk-bps-inc">$0.00</div></div>
           <div class="desk-stat-card"><div class="desk-stat-label">Total Expenses</div><div class="desk-stat-value exp" id="desk-bps-exp">$0.00</div></div>
         </div>
         <div class="desk-table-card" id="desk-bps-table"></div>
@@ -539,7 +539,7 @@ input[type=file]{display:none;}
         <div class="sync-bar" id="desk-bes-sync"><div class="sync-dot"></div>Syncing with Firebase…</div>
         <div class="desk-stat-row">
           <div class="desk-stat-card"><div class="desk-stat-label">Balance</div><div class="desk-stat-value bal" id="desk-bes-bal">$0.00</div></div>
-          <div class="desk-stat-card"><div class="desk-stat-label">Total Income</div><div class="desk-stat-value inc" id="desk-bes-inc">$0.00</div></div>
+          <div class="desk-stat-card"><div class="desk-stat-label">Total Deposits</div><div class="desk-stat-value inc" id="desk-bes-inc">$0.00</div></div>
           <div class="desk-stat-card"><div class="desk-stat-label">Total Expenses</div><div class="desk-stat-value exp" id="desk-bes-exp">$0.00</div></div>
         </div>
         <div class="desk-table-card" id="desk-bes-table"></div>
@@ -590,7 +590,7 @@ input[type=file]{display:none;}
     </div>
     <div class="modal-body">
       <div class="type-toggle">
-        <button class="type-btn active-inc" id="btn-inc" onclick="setType('income')">⬇ Income</button>
+        <button class="type-btn active-inc" id="btn-inc" onclick="setType('income')">⬇ Deposit</button>
         <button class="type-btn" id="btn-exp" onclick="setType('expense')">⬆ Expense</button>
       </div>
       <div class="form-group"><label class="form-label">Description</label><input class="form-input" id="desc-input" placeholder="e.g. Book Fair, Field Trip" type="text" autocomplete="off"></div>
@@ -784,7 +784,7 @@ function computeWithBal(data) {
 // ── MOBILE RENDER ─────────────────────────────────────────────────────
 function renderMobile(school, data) {
   const { withBal, bal, inc, exp } = computeWithBal(data);
-  document.getElementById('mob-' + school + '-bal').textContent = fmt(bal);
+  document.getElementById('mob-' + school + '-bal').textContent = fmtBal(bal);
   document.getElementById('mob-' + school + '-inc').textContent = fmt(inc);
   document.getElementById('mob-' + school + '-exp').textContent = fmt(exp);
   document.getElementById('mob-' + school + '-count').textContent = withBal.length + ' total';
@@ -853,7 +853,7 @@ function renderDesktop(school, data) {
         ${t.vendor ? '<div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:2px;">🏪 '+esc(t.vendor)+'</div>' : ''}
       </div>
       <div class="desk-td desk-td-date">${fmtDate(t.date)}</div>
-      <div class="desk-td"><span class="desk-td-type ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'⬇ Income':'⬆ Expense'}</span></div>
+      <div class="desk-td"><span class="desk-td-type ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'⬇ Deposit':'⬆ Expense'}</span></div>
       <div class="desk-td right desk-td-amt ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
       <div class="desk-td right desk-td-bal">${fmtBal(t.runBal)}</div>
       <div class="desk-td" onclick="event.stopPropagation()">
@@ -1014,66 +1014,79 @@ function compressImage(dataUrl, maxWidth, quality) {
   });
 }
 async function scanWithGemini(base64, mimeType) {
-  // Pull recent corrections to improve prompt accuracy
-  let correctionExamples = '';
-  try {
-    const feedbackSnap = await db.collection('users').doc(currentUser.uid)
-      .collection('scanFeedback')
-      .where('hasCorrected', '==', true)
-      .orderBy('created', 'desc')
-      .limit(5)
-      .get();
-    const examples = [];
-    feedbackSnap.forEach(doc => {
-      const d = doc.data();
-      if (d.aiResult && d.userResult) {
-        examples.push(`AI got: amount=${d.aiResult.amount}, vendor="${d.aiResult.vendor}", desc="${d.aiResult.description}" → User corrected to: amount=${d.userResult.amount}, vendor="${d.userResult.vendor}", desc="${d.userResult.description}"`);
-      }
-    });
-    if (examples.length) {
-      correctionExamples = ' Here are recent corrections to learn from: ' + examples.join('; ') + '.';
-    }
-  } catch(e) { /* ignore - corrections are optional enhancement */ }
-
-  const prompt = 'You are a receipt scanner for a school PTO accounting app. Carefully analyze this receipt or deposit slip.' + correctionExamples + ' Respond ONLY with valid JSON, no markdown, no backticks, no explanation. Format exactly: {"amount":<final total as number or null>,"vendor":"<business or store name only, e.g. Walmart, Dollar Tree, null if not visible>","description":"<brief purpose max 4 words, e.g. Supplies, Pizza Party, Book Fair>","date":"<YYYY-MM-DD or null if not visible>"}';
-  // Try primary model, fall back to alternate if needed
   const apiKey = _dk();
-  if (!apiKey) throw new Error('No Gemini API key set. Go to the Export tab and paste your key.');
+  if (!apiKey) throw new Error('No Gemini API key found.');
+
+  // Simple, unambiguous prompt - no embedded JSON examples that confuse the model
+  const prompt = [
+    'Analyze this receipt or deposit slip image.',
+    'Extract: the final dollar total (just the number), the store or vendor name, a brief 2-4 word description of what was purchased, and the date.',
+    'Reply with ONLY a raw JSON object on a single line. No markdown fences, no backticks, no extra text before or after.',
+    'Use exactly these keys: amount (number or null), vendor (string or null), description (string or null), date (YYYY-MM-DD string or null).',
+    'Example of correct response: {"amount":47.23,"vendor":"Walmart","description":"School supplies","date":"2025-05-01"}'
+  ].join(' ');
+
   const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
   let resp, lastErr;
+
   for (const model of models) {
     try {
-      resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: base64 } }, { text: prompt }] }], generationConfig: { temperature: 0, maxOutputTokens: 300 } })
-      });
-      if (resp.ok) break; // success - stop trying
-      const errData = await resp.json();
+      resp = await fetch(
+        'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [
+              { inline_data: { mime_type: mimeType, data: base64 } },
+              { text: prompt }
+            ]}],
+            generationConfig: { temperature: 0, maxOutputTokens: 200, responseMimeType: 'application/json' }
+          })
+        }
+      );
+      if (resp.ok) break;
+      const errData = await resp.json().catch(() => ({}));
       lastErr = errData.error?.message || 'API error';
-      if (!lastErr.includes('not found') && !lastErr.includes('deprecated')) break; // non-model error, stop retrying
+      if (!lastErr.includes('not found') && !lastErr.includes('deprecated') && !lastErr.includes('invalid')) break;
     } catch(fetchErr) { lastErr = fetchErr.message; }
   }
+
   if (!resp || !resp.ok) {
-    let errMsg = lastErr || 'Gemini API error';
-    if (errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) errMsg = 'Daily scan limit reached. Try again tomorrow — limit resets at midnight.';
-    if (errMsg.includes('API_KEY') || errMsg.includes('key not valid')) errMsg = 'Invalid Gemini API key.';
-    throw new Error(errMsg);
+    let msg = lastErr || 'Gemini API error';
+    if (msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')) msg = 'Daily scan limit reached. Try again tomorrow.';
+    if (msg.includes('API_KEY') || msg.includes('key not valid') || msg.includes('invalid')) msg = 'Invalid Gemini API key.';
+    throw new Error(msg);
   }
-  if (!resp.ok) {
-    let errMsg = 'Gemini API error';
-    try {
-      const e = await resp.json();
-      errMsg = e.error?.message || errMsg;
-      // Add helpful context for common errors
-      if (errMsg.includes('not found')) errMsg = 'AI model not available. Please try again.';
-      if (errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) errMsg = 'Daily scan limit reached (250/day). Try again tomorrow.';
-      if (errMsg.includes('API_KEY') || errMsg.includes('key')) errMsg = 'Invalid API key. Check your Gemini key in settings.';
-    } catch(e2) {}
-    throw new Error(errMsg);
-  }
+
   const data = await resp.json();
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  return JSON.parse(text.replace(/```json|```/g, '').trim());
+  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+  // Robust JSON extraction - handle any extra text the model adds
+  let parsed = null;
+  // Try direct parse first
+  try { parsed = JSON.parse(raw.trim()); } catch(e1) {}
+  // Try extracting JSON object from text
+  if (!parsed) {
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (match) {
+      try { parsed = JSON.parse(match[0]); } catch(e2) {}
+    }
+  }
+  // Try cleaning markdown fences
+  if (!parsed) {
+    try { parsed = JSON.parse(raw.replace(/```json|```/g, '').trim()); } catch(e3) {}
+  }
+
+  if (!parsed) throw new Error('Could not read the receipt. Please enter the amount manually.');
+
+  // Sanitize values
+  return {
+    amount: parsed.amount != null && !isNaN(parseFloat(parsed.amount)) ? parseFloat(parsed.amount) : null,
+    vendor: typeof parsed.vendor === 'string' && parsed.vendor !== 'null' ? parsed.vendor.trim() : null,
+    description: typeof parsed.description === 'string' && parsed.description !== 'null' ? parsed.description.trim() : null,
+    date: typeof parsed.date === 'string' && parsed.date.match(/^\d{4}-\d{2}-\d{2}$/) ? parsed.date : null
+  };
 }
 
 // ── SAVE ──────────────────────────────────────────────────────────────
@@ -1141,7 +1154,7 @@ function openDetail(school, id) {
       <div class="detail-bigdesc">${esc(t.desc)}</div>
     </div>
     <div class="detail-rows">
-      <div class="detail-row-item"><span class="detail-key">Type</span><span class="detail-val" style="text-transform:capitalize;color:${isInc?'var(--green)':'var(--expense)'}">${t.type}</span></div>
+      <div class="detail-row-item"><span class="detail-key">Type</span><span class="detail-val" style="text-transform:capitalize;color:${isInc?'var(--green)':'var(--expense)'}">${t.type === 'income' ? 'Deposit' : 'Expense'}</span></div>
       <div class="detail-row-item"><span class="detail-key">Date</span><span class="detail-val">${fmtDate(t.date)}</span></div>
       <div class="detail-row-item"><span class="detail-key">Account</span><span class="detail-val">${school === 'bps' ? 'Primary (BPS)' : 'Elementary (BES)'}</span></div>
       <div class="detail-row-item"><span class="detail-key">Balance After</span><span class="detail-val blue">${fmtBal(t.runBal)}</span></div>
@@ -1201,7 +1214,7 @@ function exportCSV(which) {
         const t = doc.data();
         if (t.type === 'income') run += t.amount; else run -= t.amount;
         const name = school === 'bps' ? 'BPS – Brookland Primary' : 'BES – Brookland Elementary';
-        rows.push(`"${name}","${t.date}","${t.type}","${(t.desc||'').replace(/"/g,'""')}","${t.type==='income'?'':'-'}${parseFloat(t.amount).toFixed(2)}","${run.toFixed(2)}"`);
+        rows.push(`"${name}","${t.date}","${t.type === 'income' ? 'deposit' : t.type}","${(t.desc||'').replace(/"/g,'""')}","${t.type==='income'?'':'-'}${parseFloat(t.amount).toFixed(2)}","${run.toFixed(2)}"`);
       });
       return rows;
     })
@@ -1333,11 +1346,15 @@ function renderRecipientPreview() {
 }
 
 async function openMailingListModal() {
-  document.getElementById('mailing-list-modal').classList.remove('hidden');
+  // Show modal immediately
+  const modal = document.getElementById('mailing-list-modal');
+  modal.classList.remove('hidden');
+  // Reset form
   document.getElementById('ml-name-input').value = '';
   document.getElementById('ml-email-input').value = '';
   document.getElementById('ml-status').textContent = '';
-  document.getElementById('mailing-list-items').innerHTML = '<div style="font-size:13px;color:var(--gray3);text-align:center;padding:12px 0;">Loading…</div>';
+  document.getElementById('mailing-list-items').innerHTML = '<div style="font-size:13px;color:var(--gray3);text-align:center;padding:16px 0;">Loading…</div>';
+  // Load fresh from Firestore then render
   await loadRecipients();
   renderMailingListModal();
 }
@@ -1345,52 +1362,84 @@ async function openMailingListModal() {
 function renderMailingListModal() {
   const el = document.getElementById('mailing-list-items');
   if (!_mailingList.length) {
-    el.innerHTML = '<div style="font-size:13px;color:var(--gray3);text-align:center;padding:12px 0;">No recipients yet. Add one below.</div>';
+    el.innerHTML = '<div style="font-size:13px;color:var(--gray3);text-align:center;padding:16px 0;">No recipients yet — add one below.</div>';
     return;
   }
-  el.innerHTML = _mailingList.map(r => `
-    <div style="display:flex;align-items:center;gap:10px;background:var(--gray1);border-radius:12px;padding:12px 14px;">
-      <div style="flex:1;min-width:0;">
-        ${r.name ? `<div style="font-size:14px;font-weight:700;color:var(--black);">${esc(r.name)}</div>` : ''}
-        <div style="font-size:${r.name?'12':'14'}px;color:${r.name?'var(--gray4)':'var(--black)'};font-weight:${r.name?'500':'600'};">${esc(r.email)}</div>
-      </div>
-      <button onclick="mlRemoveRecipient('${r.id}')" style="background:var(--expense-light);border:none;color:var(--expense);border-radius:8px;padding:6px 10px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;">Remove</button>
-    </div>`).join('');
+  // Build using DOM, not innerHTML template literals, to avoid all quote/ID issues
+  el.innerHTML = '';
+  _mailingList.forEach(r => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;background:var(--gray1);border-radius:12px;padding:12px 14px;margin-bottom:8px;';
+    const info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0;';
+    if (r.name) {
+      const nameDiv = document.createElement('div');
+      nameDiv.style.cssText = 'font-size:14px;font-weight:700;color:var(--black);';
+      nameDiv.textContent = r.name;
+      info.appendChild(nameDiv);
+    }
+    const emailDiv = document.createElement('div');
+    emailDiv.style.cssText = 'font-size:' + (r.name ? '12' : '14') + 'px;color:' + (r.name ? 'var(--gray4)' : 'var(--black)') + ';font-weight:' + (r.name ? '500' : '600') + ';word-break:break-all;';
+    emailDiv.textContent = r.email;
+    info.appendChild(emailDiv);
+    row.appendChild(info);
+    const btn = document.createElement('button');
+    btn.textContent = 'Remove';
+    btn.style.cssText = 'background:var(--red-light);border:1.5px solid var(--red-mid);color:var(--red);border-radius:8px;padding:8px 12px;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0;font-family:var(--font);transition:all .15s;';
+    btn.onmouseover = () => { btn.style.background = 'var(--red)'; btn.style.color = '#fff'; };
+    btn.onmouseout = () => { btn.style.background = 'var(--red-light)'; btn.style.color = 'var(--red)'; };
+    btn.onclick = () => mlRemoveRecipient(r.id);
+    row.appendChild(btn);
+    el.appendChild(row);
+  });
 }
 
 async function mlAddRecipient() {
   const nameEl = document.getElementById('ml-name-input');
   const emailEl = document.getElementById('ml-email-input');
   const statusEl = document.getElementById('ml-status');
+  if (!nameEl || !emailEl || !statusEl) return;
+
   const name = nameEl.value.trim();
   const email = emailEl.value.trim().toLowerCase();
-  if (!email || !email.includes('@')) {
-    statusEl.textContent = 'Please enter a valid email address.';
+
+  // Validate
+  if (!email || !email.includes('@') || !email.includes('.')) {
     statusEl.style.color = 'var(--expense)';
+    statusEl.textContent = 'Please enter a valid email address.';
+    emailEl.focus();
     return;
   }
   if (_mailingList.find(r => r.email === email)) {
-    statusEl.textContent = 'That email is already in your list.';
     statusEl.style.color = 'var(--expense)';
+    statusEl.textContent = email + ' is already on the list.';
     return;
   }
+
+  // Disable button during save
+  const addBtn = document.getElementById('ml-add-btn');
+  if (addBtn) { addBtn.disabled = true; addBtn.textContent = 'Adding…'; }
+  statusEl.textContent = '';
+
   try {
-    const ref = await db.collection('users').doc(currentUser.uid).collection('mailingList')
-      .add({ name: name || null, email, added: new Date().toISOString() });
-    _mailingList.push({ id: ref.id, name: name || null, email, added: new Date().toISOString() });
+    const docData = { email, added: new Date().toISOString() };
+    if (name) docData.name = name;
+    const ref = await db.collection('users').doc(currentUser.uid).collection('mailingList').add(docData);
+    _mailingList.push({ id: ref.id, ...docData });
     _mailingList.sort((a,b) => (a.added||'').localeCompare(b.added||''));
     nameEl.value = '';
     emailEl.value = '';
-    statusEl.textContent = '✅ ' + (name || email) + ' added!';
     statusEl.style.color = 'var(--green)';
-    setTimeout(() => { statusEl.textContent = ''; }, 2500);
+    statusEl.textContent = '✅ ' + (name ? name + ' (' + email + ')' : email) + ' added!';
+    setTimeout(() => { statusEl.textContent = ''; }, 3000);
     renderMailingListModal();
     renderRecipientPreview();
-    // Focus email field for quick multi-add
     emailEl.focus();
   } catch(e) {
-    statusEl.textContent = 'Could not save: ' + e.message;
     statusEl.style.color = 'var(--expense)';
+    statusEl.textContent = 'Error: ' + e.message;
+  } finally {
+    if (addBtn) { addBtn.disabled = false; addBtn.textContent = '+ Add to List'; }
   }
 }
 
@@ -1446,7 +1495,7 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
     <div style="padding:14px 32px 8px;font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;">Period Summary — ${fmtD(fromDate)} to ${fmtD(toDate)}</div>
     <div style="display:flex;">
       <div style="flex:1;padding:8px 20px 18px;text-align:center;border-right:1px solid #eee;">
-        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Total Income</div>
+        <div style="font-size:11px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Total Deposits</div>
         <div style="font-size:26px;font-weight:800;color:#1E8A3C;">+${fmtCur(incTotal)}</div>
         <div style="font-size:11px;color:#aaa;margin-top:4px;">${transactions.filter(t=>t.type==="income").length} deposits</div>
       </div>
@@ -1488,7 +1537,7 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 </div>
 
 <!-- MAILING LIST MODAL -->
-<div class="modal-overlay hidden" id="mailing-list-modal" onclick="overlayClose(event,'mailing-list-modal')">
+<div class="modal-overlay hidden" id="mailing-list-modal" onclick="overlayClose(event,'mailing-list-modal')" style="z-index:300;">
   <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-head">
@@ -1502,7 +1551,7 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
         <input class="add-recipient-input" id="ml-name-input" type="text" placeholder="Name (optional)" autocomplete="name" style="flex:1;">
         <input class="add-recipient-input" id="ml-email-input" type="email" placeholder="Email address" autocomplete="email" style="flex:1.4;">
       </div>
-      <button class="add-recipient-btn" style="width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:800;margin-top:4px;" onclick="mlAddRecipient()">+ Add to List</button>
+      <button class="add-recipient-btn" id="ml-add-btn" style="width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:800;margin-top:4px;" onclick="mlAddRecipient()">+ Add to List</button>
       <div id="ml-status" style="font-size:12px;text-align:center;margin-top:8px;font-weight:600;min-height:16px;"></div>
     </div>
   </div>
@@ -1576,7 +1625,7 @@ async function sendBalanceEmail() {
 `;
       body += `Current Balance:  ${fmtCur(currentBal)}
 `;
-      body += `Period Income:    +${fmtCur(periodInc)}
+      body += `Period Deposits:  +${fmtCur(periodInc)}
 `;
       body += `Period Expenses:  -${fmtCur(periodExp)}
 `;
