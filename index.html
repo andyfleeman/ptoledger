@@ -2,6 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<!-- v1779757387 -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -171,7 +175,22 @@ body{background:var(--page);}
   .desk-about-sub{font-size:13px;color:var(--gray4);line-height:1.7;}
 
   /* EXPAND */
-  .desk-expand-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;cursor:pointer;color:var(--red);font-size:13px;font-weight:700;border-top:.5px solid var(--gray2);}
+  .desk-del-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  background:var(--red-light);
+  color:var(--red);
+  border:1.5px solid var(--red-mid);
+  border-radius:8px;
+  padding:6px 12px;
+  font-size:12px;font-weight:700;
+  cursor:pointer;
+  font-family:var(--font);
+  transition:all .15s;
+  white-space:nowrap;
+  line-height:1;
+}
+.desk-del-btn:hover{background:var(--red);color:#fff;border-color:var(--red);}
+.desk-expand-row{display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;cursor:pointer;color:var(--red);font-size:13px;font-weight:700;border-top:.5px solid var(--gray2);}
   .desk-expand-row:hover{background:var(--gray1);}
 }
 
@@ -298,8 +317,8 @@ body{background:var(--page);}
 .detail-val{font-size:14px;font-weight:600;}
 .detail-val.blue{color:var(--blue);}
 .receipt-preview{width:calc(100% - 36px);margin:0 18px 14px;border-radius:14px;display:block;}
-.delete-btn{width:calc(100% - 36px);margin:0 18px 10px;padding:14px;border-radius:14px;background:var(--expense-light);color:var(--expense);border:1.5px solid var(--expense);font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;}
-.delete-btn:hover{background:var(--expense);color:#fff;}
+.delete-btn{width:calc(100% - 36px);margin:0 18px 10px;padding:14px;border-radius:14px;background:var(--red-light);color:var(--red);border:1.5px solid var(--red-mid);font-size:15px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;}
+.delete-btn:hover,.delete-btn:active{background:var(--red);color:#fff;border-color:var(--red);}
 .close-btn{width:calc(100% - 36px);margin:0 18px 8px;padding:14px;border-radius:14px;background:var(--gray1);border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);}
 input[type=file]{display:none;}
 
@@ -374,6 +393,9 @@ input[type=file]{display:none;}
     <!-- BPS -->
     <div id="mob-tab-bps">
       <div class="sync-bar" id="mob-bps-sync"><div class="sync-dot"></div>Syncing…</div>
+      <button onclick="openAddModal()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 0;border-radius:50px;background:var(--red);color:#fff;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);margin-bottom:12px;letter-spacing:.2px;box-shadow:0 3px 12px rgba(176,30,36,.35);">
+        <span style="font-size:20px;line-height:1;margin-top:-1px;">+</span> Add Transaction
+      </button>
       <div class="summary-grid">
         <div class="summary-card"><div class="s-label">Balance</div><div class="s-value bal" id="mob-bps-bal">$0.00</div></div>
         <div class="summary-card"><div class="s-label">Income</div><div class="s-value inc" id="mob-bps-inc">$0.00</div></div>
@@ -385,6 +407,9 @@ input[type=file]{display:none;}
     <!-- BES -->
     <div id="mob-tab-bes" style="display:none;">
       <div class="sync-bar" id="mob-bes-sync"><div class="sync-dot"></div>Syncing…</div>
+      <button onclick="openAddModal()" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:13px 0;border-radius:50px;background:var(--red);color:#fff;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);margin-bottom:12px;letter-spacing:.2px;box-shadow:0 3px 12px rgba(176,30,36,.35);">
+        <span style="font-size:20px;line-height:1;margin-top:-1px;">+</span> Add Transaction
+      </button>
       <div class="summary-grid">
         <div class="summary-card"><div class="s-label">Balance</div><div class="s-value bal" id="mob-bes-bal">$0.00</div></div>
         <div class="summary-card"><div class="s-label">Income</div><div class="s-value inc" id="mob-bes-inc">$0.00</div></div>
@@ -593,7 +618,7 @@ input[type=file]{display:none;}
     <div class="modal-handle"></div>
     <div id="detail-content"></div>
     <button class="close-btn" onclick="closeModal('detail-modal')">Close</button>
-    <button class="delete-btn" onclick="deleteTransaction()">🗑 Delete Transaction</button>
+    <button class="delete-btn" onclick="deleteTransaction()">Delete Transaction</button>
   </div>
 </div>
 
@@ -821,7 +846,7 @@ function renderDesktop(school, data) {
       <div class="desk-td right desk-td-amt ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
       <div class="desk-td right desk-td-bal">${fmtBal(t.runBal)}</div>
       <div class="desk-td" onclick="event.stopPropagation()">
-        <button class="desk-del-btn" onclick="quickDeleteTx('${school}','${t.id}','${esc(t.desc)}',${t.amount},'${t.date}')" title="Delete">Delete</button>
+        <button class="desk-del-btn" onclick="quickDeleteTx('${school}','${t.id}','${esc(t.desc)}',${t.amount},'${t.date}')" title="Delete this transaction">Delete</button>
       </div>
     </div>`).join('');
   const expandBtn = hasMore ? `<div class="desk-expand-row" onclick="toggleExpand('${school}','desk')">
@@ -1101,12 +1126,18 @@ function openDetail(school, id, allData) {
 function deleteTransaction() {
   const data = cachedData[detailSchool] || [];
   const t = data.find(x => x.id === detailId);
-  const label = t ? `"${t.desc}" — $${Math.abs(t.amount).toFixed(2)} on ${fmtDate(t.date)}` : 'this transaction';
-  if (!confirm(`Delete ${label}?
-
-This cannot be undone.`)) return;
+  const desc = t ? t.desc : 'this transaction';
+  const amt = t ? '$' + Math.abs(t.amount).toFixed(2) : '';
+  const dateStr = t ? ' on ' + fmtDate(t.date) : '';
+  if (!confirm('Delete "' + desc + '"' + (amt ? ' — ' + amt : '') + dateStr + '?\n\nThis cannot be undone.')) return;
   deleteTx(detailSchool, detailId);
   closeModal('detail-modal');
+}
+
+function quickDeleteTx(school, id, desc, amount, date) {
+  const amt = '$' + Math.abs(parseFloat(amount)).toFixed(2);
+  if (!confirm('Delete "' + desc + '" — ' + amt + ' on ' + fmtDate(date) + '?\n\nThis cannot be undone.')) return;
+  deleteTx(school, id);
 }
 
 // ── EXPORT ────────────────────────────────────────────────────────────
@@ -1224,12 +1255,15 @@ let _mailingList = [];
 
 async function loadRecipients() {
   try {
-    const snap = await db.collection('users').doc(currentUser.uid).collection('mailingList').orderBy('added','asc').get();
+    const snap = await db.collection('users').doc(currentUser.uid).collection('mailingList').get();
     _mailingList = [];
     snap.forEach(doc => _mailingList.push({ id: doc.id, ...doc.data() }));
+    _mailingList.sort((a,b) => (a.added||'').localeCompare(b.added||''));
     renderRecipientPreview();
   } catch(e) {
-    document.getElementById('recipient-preview').innerHTML = '<div style="font-size:13px;color:var(--gray3);">Could not load list.</div>';
+    console.error('loadRecipients error:', e);
+    const el = document.getElementById('recipient-preview');
+    if (el) el.innerHTML = '<div style="font-size:13px;color:var(--gray3);">Could not load list: ' + e.message + '</div>';
   }
 }
 
@@ -1249,12 +1283,14 @@ function renderRecipientPreview() {
     </div>`).join('') + `<div style="font-size:11px;color:var(--gray3);margin-top:6px;">${_mailingList.length} recipient${_mailingList.length!==1?'s':''}</div>`;
 }
 
-function openMailingListModal() {
-  renderMailingListModal();
+async function openMailingListModal() {
+  document.getElementById('mailing-list-modal').classList.remove('hidden');
   document.getElementById('ml-name-input').value = '';
   document.getElementById('ml-email-input').value = '';
   document.getElementById('ml-status').textContent = '';
-  document.getElementById('mailing-list-modal').classList.remove('hidden');
+  document.getElementById('mailing-list-items').innerHTML = '<div style="font-size:13px;color:var(--gray3);text-align:center;padding:12px 0;">Loading…</div>';
+  await loadRecipients();
+  renderMailingListModal();
 }
 
 function renderMailingListModal() {
@@ -1293,13 +1329,16 @@ async function mlAddRecipient() {
     const ref = await db.collection('users').doc(currentUser.uid).collection('mailingList')
       .add({ name: name || null, email, added: new Date().toISOString() });
     _mailingList.push({ id: ref.id, name: name || null, email, added: new Date().toISOString() });
+    _mailingList.sort((a,b) => (a.added||'').localeCompare(b.added||''));
     nameEl.value = '';
     emailEl.value = '';
-    statusEl.textContent = '✅ Added!';
+    statusEl.textContent = '✅ ' + (name || email) + ' added!';
     statusEl.style.color = 'var(--green)';
-    setTimeout(() => statusEl.textContent = '', 2000);
+    setTimeout(() => { statusEl.textContent = ''; }, 2500);
     renderMailingListModal();
     renderRecipientPreview();
+    // Focus email field for quick multi-add
+    emailEl.focus();
   } catch(e) {
     statusEl.textContent = 'Could not save: ' + e.message;
     statusEl.style.color = 'var(--expense)';
@@ -1414,7 +1453,7 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
         <input class="add-recipient-input" id="ml-name-input" type="text" placeholder="Name (optional)" autocomplete="name" style="flex:1;">
         <input class="add-recipient-input" id="ml-email-input" type="email" placeholder="Email address" autocomplete="email" style="flex:1.4;">
       </div>
-      <button class="add-recipient-btn" style="width:100%;padding:12px;border-radius:12px;font-size:15px;" onclick="mlAddRecipient()">+ Add to List</button>
+      <button class="add-recipient-btn" style="width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:800;margin-top:4px;" onclick="mlAddRecipient()">+ Add to List</button>
       <div id="ml-status" style="font-size:12px;text-align:center;margin-top:8px;font-weight:600;min-height:16px;"></div>
     </div>
   </div>
