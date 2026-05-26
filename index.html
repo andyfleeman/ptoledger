@@ -235,6 +235,8 @@ body{background:var(--page);}
 .tx-amount.inc{color:var(--green);}
 .tx-amount.exp{color:var(--expense);}
 .tx-bal{font-size:11px;color:var(--blue);font-weight:600;margin-top:2px;}
+.mob-del-btn{background:var(--red-light);border:1.5px solid var(--red-mid);color:var(--red);border-radius:8px;width:30px;height:30px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font);padding:0;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.mob-del-btn:active{background:var(--red);color:#fff;border-color:var(--red);}
 .expand-row{display:flex;align-items:center;justify-content:center;gap:6px;padding:12px;cursor:pointer;color:var(--red);font-size:13px;font-weight:700;border-top:.5px solid var(--gray2);}
 .expand-arrow{font-size:16px;transition:transform .2s;display:inline-block;}
 .expand-arrow.open{transform:rotate(180deg);}
@@ -642,11 +644,9 @@ const FIREBASE_CONFIG = {
 const _EK = "AxkpPhE8ES41HBoAMwlRQjFRDCs1dwdWFzEIAlczdSoWZhESPhMj";
 const _ES = "BPS_BES_PTO_Bearcats_Brookland";
 function _dk() {
-  const lk = localStorage.getItem('pto_gemini_key');
-  if (lk && lk.length > 20) return lk;
   const b = atob(_EK), s = _ES; let r = '';
   for (let i = 0; i < b.length; i++) r += String.fromCharCode(b.charCodeAt(i) ^ s.charCodeAt(i % s.length));
-  return (r.length > 20 && !r.includes('REPLACE')) ? r : lk || '';
+  return r;
 }
 
 // ── STATE ─────────────────────────────────────────────────────────────
@@ -663,6 +663,8 @@ const isDesktop = () => window.innerWidth >= 769;
 // ── FIREBASE INIT ─────────────────────────────────────────────────────
 firebase.initializeApp(FIREBASE_CONFIG);
 db = firebase.firestore();
+// Clear any stale/invalid Gemini key from localStorage
+localStorage.removeItem('pto_gemini_key');
 
 // Handle redirect result from PWA sign-in
 firebase.auth().getRedirectResult().catch(err => {
@@ -795,7 +797,7 @@ function renderMobile(school, data) {
   const show = isExp ? withBal : withBal.slice(0, PREVIEW);
   const hasMore = withBal.length > PREVIEW;
   const rows = show.map(t => `
-    <div class="ledger-item" onclick='openDetail("${school}","${t.id}",${JSON.stringify(withBal)})'>
+    <div class="ledger-item" onclick='openDetail("${school}","${t.id}")'>
       <div class="tx-icon ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'⬇️':'⬆️'}</div>
       <div class="tx-main">
         <div class="tx-desc">${esc(t.desc)}</div>
@@ -805,6 +807,15 @@ function renderMobile(school, data) {
       <div class="tx-right">
         <div class="tx-amount ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
         <div class="tx-bal">${fmtBal(t.runBal)}</div>
+      </div>
+      <div onclick="event.stopPropagation()" style="flex-shrink:0;margin-left:8px;display:flex;align-items:center;">
+        <button class="mob-del-btn"
+          data-school="${school}"
+          data-id="${t.id}"
+          data-amount="${t.amount}"
+          data-date="${t.date}"
+          data-desc="${esc(t.desc).replace(/"/g,'&quot;')}"
+          onclick="handleMobDelete(this)">✕</button>
       </div>
     </div>`).join('');
   const expandBtn = hasMore ? `<div class="expand-row" onclick="toggleExpand('${school}','mob')">
@@ -836,7 +847,7 @@ function renderDesktop(school, data) {
     <div class="desk-th"></div>
   </div>`;
   const rows = show.map(t => `
-    <div class="desk-tr" onclick='openDetail("${school}","${t.id}",${JSON.stringify(withBal)})'>
+    <div class="desk-tr" onclick='openDetail("${school}","${t.id}")'>
       <div class="desk-td desk-td-desc">
         ${esc(t.desc)}
         ${t.vendor ? '<div style="font-size:11px;color:var(--blue);font-weight:600;margin-top:2px;">🏪 '+esc(t.vendor)+'</div>' : ''}
@@ -846,7 +857,14 @@ function renderDesktop(school, data) {
       <div class="desk-td right desk-td-amt ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
       <div class="desk-td right desk-td-bal">${fmtBal(t.runBal)}</div>
       <div class="desk-td" onclick="event.stopPropagation()">
-        <button class="desk-del-btn" onclick="quickDeleteTx('${school}','${t.id}','${esc(t.desc)}',${t.amount},'${t.date}')" title="Delete this transaction">Delete</button>
+        <button class="desk-del-btn"
+          data-school="${school}"
+          data-id="${t.id}"
+          data-amount="${t.amount}"
+          data-date="${t.date}"
+          data-desc="${esc(t.desc).replace(/"/g,'&quot;')}"
+          onclick="handleDeskDelete(this)"
+          title="Delete this transaction">Delete</button>
       </div>
     </div>`).join('');
   const expandBtn = hasMore ? `<div class="desk-expand-row" onclick="toggleExpand('${school}','desk')">
@@ -866,7 +884,7 @@ function updateSidebarSummary(school, data) {
 function toggleExpand(school, layout) {
   const key = layout === 'desk' ? school + '_desk' : school;
   expanded[key] = !expanded[key];
-  renderBoth(school, cachedData[school]);
+  renderBoth(school, cachedData[school] || []);
 }
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────
@@ -1103,10 +1121,17 @@ async function saveTransaction() {
 }
 
 // ── DETAIL ────────────────────────────────────────────────────────────
-function openDetail(school, id, allData) {
+function openDetail(school, id) {
   detailId = id; detailSchool = school;
-  const data = typeof allData === 'string' ? JSON.parse(allData) : allData;
-  const t = data.find(x => x.id === id); if (!t) return;
+  // Compute running balances from cachedData
+  const raw = cachedData[school] || [];
+  const sorted = [...raw].sort((a,b) => new Date(a.date)-new Date(b.date));
+  let run = 0;
+  const withBal = sorted.map(t => {
+    if (t.type==='income') run+=t.amount; else run-=t.amount;
+    return {...t, runBal: run};
+  });
+  const t = withBal.find(x => x.id === id); if (!t) return;
   const isInc = t.type === 'income';
   const imgTag = t.image ? `<img src="data:${t.imageMime || 'image/jpeg'};base64,${t.image}" class="receipt-preview" alt="Receipt">` : '';
   document.getElementById('detail-content').innerHTML = `
@@ -1135,6 +1160,30 @@ function deleteTransaction() {
 }
 
 function quickDeleteTx(school, id, desc, amount, date) {
+  const amt = '$' + Math.abs(parseFloat(amount)).toFixed(2);
+  if (!confirm('Delete "' + desc + '" — ' + amt + ' on ' + fmtDate(date) + '?\n\nThis cannot be undone.')) return;
+  deleteTx(school, id);
+}
+
+function handleDeskDelete(btn) {
+  event.stopPropagation();
+  const school = btn.getAttribute('data-school');
+  const id = btn.getAttribute('data-id');
+  const desc = btn.getAttribute('data-desc');
+  const amount = btn.getAttribute('data-amount');
+  const date = btn.getAttribute('data-date');
+  const amt = '$' + Math.abs(parseFloat(amount)).toFixed(2);
+  if (!confirm('Delete "' + desc + '" — ' + amt + ' on ' + fmtDate(date) + '?\n\nThis cannot be undone.')) return;
+  deleteTx(school, id);
+}
+
+function handleMobDelete(btn) {
+  event.stopPropagation();
+  const school = btn.getAttribute('data-school');
+  const id = btn.getAttribute('data-id');
+  const desc = btn.getAttribute('data-desc');
+  const amount = btn.getAttribute('data-amount');
+  const date = btn.getAttribute('data-date');
   const amt = '$' + Math.abs(parseFloat(amount)).toFixed(2);
   if (!confirm('Delete "' + desc + '" — ' + amt + ' on ' + fmtDate(date) + '?\n\nThis cannot be undone.')) return;
   deleteTx(school, id);
