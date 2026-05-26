@@ -56,8 +56,8 @@ body{background:var(--page);}
 .mob-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 90px;}
 
 /* MOBILE FAB */
-.fab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+22px);right:calc(50% - 215px + 16px);width:58px;height:58px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(176,30,36,.45);z-index:100;transition:transform .15s;}
-.fab:active{transform:scale(.93);}
+.fab{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+22px);left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:30px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(176,30,36,.45);z-index:100;transition:transform .15s,opacity .15s;}
+.fab:active{transform:translateX(-50%) scale(.93);}
 
 /* ══════════════════════════════════════════════
    DESKTOP LAYOUT (≥769px)
@@ -953,11 +953,39 @@ async function scanWithGemini(base64, mimeType) {
   } catch(e) { /* ignore - corrections are optional enhancement */ }
 
   const prompt = 'You are a receipt scanner for a school PTO accounting app. Carefully analyze this receipt or deposit slip.' + correctionExamples + ' Respond ONLY with valid JSON, no markdown, no backticks, no explanation. Format exactly: {"amount":<final total as number or null>,"vendor":"<business or store name only, e.g. Walmart, Dollar Tree, null if not visible>","description":"<brief purpose max 4 words, e.g. Supplies, Pizza Party, Book Fair>","date":"<YYYY-MM-DD or null if not visible>"}';
-  const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_KEY}`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: base64 } }, { text: prompt }] }], generationConfig: { temperature: 0, maxOutputTokens: 200 } })
-  });
-  if (!resp.ok) { const e = await resp.json(); throw new Error(e.error?.message || 'Gemini API error'); }
+  // Try primary model, fall back to alternate if needed
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  let resp, lastErr;
+  for (const model of models) {
+    try {
+      resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_KEY}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ inline_data: { mime_type: mimeType, data: base64 } }, { text: prompt }] }], generationConfig: { temperature: 0, maxOutputTokens: 300 } })
+      });
+      if (resp.ok) break; // success - stop trying
+      const errData = await resp.json();
+      lastErr = errData.error?.message || 'API error';
+      if (!lastErr.includes('not found') && !lastErr.includes('deprecated')) break; // non-model error, stop retrying
+    } catch(fetchErr) { lastErr = fetchErr.message; }
+  }
+  if (!resp || !resp.ok) {
+    let errMsg = lastErr || 'Gemini API error';
+    if (errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) errMsg = 'Daily scan limit reached. Try again tomorrow — limit resets at midnight.';
+    if (errMsg.includes('API_KEY') || errMsg.includes('key not valid')) errMsg = 'Invalid Gemini API key.';
+    throw new Error(errMsg);
+  }
+  if (!resp.ok) {
+    let errMsg = 'Gemini API error';
+    try {
+      const e = await resp.json();
+      errMsg = e.error?.message || errMsg;
+      // Add helpful context for common errors
+      if (errMsg.includes('not found')) errMsg = 'AI model not available. Please try again.';
+      if (errMsg.includes('quota') || errMsg.includes('RESOURCE_EXHAUSTED')) errMsg = 'Daily scan limit reached (250/day). Try again tomorrow.';
+      if (errMsg.includes('API_KEY') || errMsg.includes('key')) errMsg = 'Invalid API key. Check your Gemini key in settings.';
+    } catch(e2) {}
+    throw new Error(errMsg);
+  }
   const data = await resp.json();
   const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   return JSON.parse(text.replace(/```json|```/g, '').trim());
