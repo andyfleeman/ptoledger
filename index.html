@@ -373,9 +373,7 @@ input[type=file]{display:none;}
     Sign in with Google
   </button>
   <div class="login-note" id="login-note">Data syncs between your mobile phone and laptop.</div>
-  <div id="pwa-note" style="display:none;font-size:12px;color:rgba(255,255,255,.6);margin-top:10px;text-align:center;max-width:300px;line-height:1.5;">
-    Tap "Sign in with Google" — it will open Safari to complete sign-in, then return here.
-  </div>
+  
 </div>
 
 <!-- ══════════════════════════════════════════════
@@ -680,41 +678,22 @@ db = firebase.firestore();
 // Clear any stale/invalid Gemini key from localStorage
 localStorage.removeItem('pto_gemini_key');
 
-// Handle sign-in from Safari handoff (iOS PWA opens Safari which signs in)
-(function() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('signin') === '1') {
-    // This page was opened from the PWA in Safari - do the popup sign-in here
-    const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider).then(function(result) {
-      // Success - close this tab, user is now signed in
-      // The PWA will detect the auth state change on next focus
-      document.body.innerHTML = '<div style="font-family:-apple-system,sans-serif;padding:40px;text-align:center;background:#B01E24;color:#fff;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;">' +
-        '<div style="font-size:48px;margin-bottom:16px;">✅</div>' +
-        '<div style="font-size:22px;font-weight:700;margin-bottom:10px;">Signed in!</div>' +
-        '<div style="font-size:15px;opacity:.8;">Return to the PTO Ledger app on your home screen.</div>' +
-        '</div>';
-    }).catch(function(err) {
-      alert('Sign-in failed: ' + err.message);
-    });
-    return;
+// Set persistence to LOCAL so auth state survives iOS Safari ITP restrictions
+// LOCAL uses localStorage (not cookies) which iOS Safari preserves
+firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL).then(function() {
+  // Handle redirect result AFTER persistence is set
+  // This fires when returning from Google's OAuth page
+  return firebase.auth().getRedirectResult();
+}).then(function(result) {
+  // If we got a user from redirect, onAuthStateChanged will handle it
+  if (result && result.user) {
+    console.log('Signed in via redirect:', result.user.email);
   }
-
-  // Normal page load - handle any pending redirect result
-  firebase.auth().getRedirectResult().then(function() {
-    // onAuthStateChanged handles session
-  }).catch(function(err) {
-    if (err.code && err.code !== 'auth/no-auth-event') {
-      console.error('Auth redirect error:', err.code);
-    }
-  });
-
-  // Show PWA tip on login screen if in standalone mode
-  if (window.navigator.standalone === true) {
-    const note = document.getElementById('pwa-note');
-    if (note) note.style.display = 'block';
+}).catch(function(err) {
+  if (err.code && err.code !== 'auth/no-auth-event') {
+    console.error('Auth error:', err.code, err.message);
   }
-})();
+});
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
@@ -732,16 +711,14 @@ firebase.auth().onAuthStateChanged(user => {
 // ── AUTH ──────────────────────────────────────────────────────────────
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  const isIOSStandalone = window.navigator.standalone === true;
-  if (isIOSStandalone) {
-    // iOS PWA: popups blocked + Firebase redirect loses state.
-    // Open this same page in Safari (not PWA) so popup works there.
-    window.open(window.location.href + (window.location.href.includes('?') ? '&' : '?') + 'signin=1', '_blank');
-  } else {
-    firebase.auth().signInWithPopup(provider).catch(function(err) {
-      alert('Sign-in failed: ' + err.message);
-    });
-  }
+  // signInWithRedirect works universally:
+  // - iOS Safari browser: navigates to Google, returns to app signed in
+  // - iOS PWA standalone: same flow, localStorage preserves auth state
+  // - Desktop Chrome/Firefox: same redirect flow
+  // signInWithPopup fails silently in iOS Safari due to cross-origin popup blocking
+  firebase.auth().signInWithRedirect(provider).catch(function(err) {
+    alert('Sign-in failed: ' + err.message);
+  });
 }
 function doSignOut() {
   if (!confirm('Sign out of PTO Ledger?')) return;
