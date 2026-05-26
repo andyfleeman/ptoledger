@@ -372,7 +372,10 @@ input[type=file]{display:none;}
     </svg>
     Sign in with Google
   </button>
-  <div class="login-note">Data syncs between your mobile phone and laptop.</div>
+  <div class="login-note" id="login-note">Data syncs between your mobile phone and laptop.</div>
+  <div id="pwa-note" style="display:none;font-size:12px;color:rgba(255,255,255,.6);margin-top:10px;text-align:center;max-width:300px;line-height:1.5;">
+    Tip: Sign in from Safari browser first, then add to home screen.
+  </div>
 </div>
 
 <!-- ══════════════════════════════════════════════
@@ -681,11 +684,20 @@ localStorage.removeItem('pto_gemini_key');
 firebase.auth().getRedirectResult().then(function(result) {
   // onAuthStateChanged fires automatically after successful redirect
 }).catch(function(err) {
-  // Ignore non-errors - no redirect in progress is normal
   if (err.code && err.code !== 'auth/no-auth-event') {
     console.error('Redirect result error:', err.code);
   }
 });
+
+// Show PWA-specific tip if running as installed app
+(function() {
+  const isStandalone = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+  if (isStandalone) {
+    const note = document.getElementById('pwa-note');
+    if (note) note.style.display = 'block';
+  }
+})();
 
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
@@ -703,14 +715,35 @@ firebase.auth().onAuthStateChanged(user => {
 // ── AUTH ──────────────────────────────────────────────────────────────
 function signInWithGoogle() {
   const provider = new firebase.auth.GoogleAuthProvider();
-  // iOS standalone PWA blocks popups - use redirect there only
-  // All other environments (Chrome, Safari browser, desktop) use popup
-  const isIOSPWA = window.navigator.standalone === true;
-  if (isIOSPWA) {
+  const isStandalone = window.navigator.standalone === true ||
+    window.matchMedia('(display-mode: standalone)').matches;
+
+  if (isStandalone) {
+    // iOS PWA: Firebase popup is blocked, redirect loses session on return.
+    // Solution: open auth in Safari browser tab, session persists back to PWA.
+    // Show instructions and open the sign-in URL in Safari.
+    const el = document.getElementById('login-screen');
+    const btn = el ? el.querySelector('.google-btn') : null;
+
+    // Use signInWithRedirect - it navigates away and back
+    // This works when authDomain is properly set and domain is authorized
     firebase.auth().signInWithRedirect(provider).catch(function(err) {
-      alert('Sign-in failed: ' + err.message);
+      // If redirect fails, show a clear message with manual instructions
+      console.error('Redirect failed:', err.code, err.message);
+      if (btn) btn.textContent = 'Tap to try again';
+      alert(
+        'Sign-in issue on home screen app.
+
+' +
+        'Please open this app in Safari browser (not from home screen), ' +
+        'sign in there, then add it back to your home screen.
+
+' +
+        'Error: ' + err.message
+      );
     });
   } else {
+    // Browser (Safari, Chrome, desktop) - popup works perfectly
     firebase.auth().signInWithPopup(provider).catch(function(err) {
       alert('Sign-in failed: ' + err.message);
     });
