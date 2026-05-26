@@ -711,10 +711,10 @@ firebase.initializeApp(FIREBASE_CONFIG);
 db = firebase.firestore();
 
 // ── ACCESS CONTROL ────────────────────────────────────────────────────
-const ADMIN_EMAIL = 'abflee@gmail.com';
+const ADMIN_EMAILS = ['abflee@gmail.com', 'andyfleeman@gmail.com'];
 
 async function checkAccess(user) {
-  if (user.email === ADMIN_EMAIL) return true;
+  if (ADMIN_EMAILS.includes(user.email)) return true;
   try {
     // Doc ID is the email address — single efficient lookup
     const doc = await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(user.email.toLowerCase()).get();
@@ -744,10 +744,17 @@ onAuthStateChanged(async user => {
 });
 
 // ── AUTH ──────────────────────────────────────────────────────────────
+var _signingIn = false;
 function signInWithGoogle() {
+  if (_signingIn) return;
+  _signingIn = true;
   var provider = new firebase.auth.GoogleAuthProvider();
   firebase.auth().signInWithPopup(provider).catch(function(err) {
-    alert('Sign-in failed: ' + err.message);
+    if (err.code !== 'auth/cancelled-popup-request' && err.code !== 'auth/popup-closed-by-user') {
+      alert('Sign-in failed: ' + err.message);
+    }
+  }).finally(function() {
+    _signingIn = false;
   });
 }
 function doSignOut() {
@@ -1616,7 +1623,7 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 let _authorizedUsers = [];
 
 async function loadAuthorizedUsers() {
-  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email)) return;
   try {
     const snap = await db.collection('pto').doc('brookland').collection('authorizedUsers').get();
     _authorizedUsers = [];
@@ -1664,7 +1671,7 @@ async function addAuthorizedUser(prefix) {
   const status = document.getElementById(prefix+'-access-status');
   const email = (input.value || '').trim().toLowerCase();
   if (!email || !email.includes('@')) { status.style.color='var(--red)'; status.textContent='Enter a valid email.'; return; }
-  if (email === ADMIN_EMAIL) { status.style.color='var(--red)'; status.textContent='That\x27s the admin account \u2014 already has access.'; return; }
+  if (ADMIN_EMAILS.includes(email)) { status.style.color='var(--red)'; status.textContent='That\x27s the admin account \u2014 already has access.'; return; }
   if (_authorizedUsers.find(u => u.email === email)) { status.style.color='var(--red)'; status.textContent='Already has access.'; return; }
   try {
     await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(email).set({ email, addedBy: currentUser.email, added: new Date().toISOString() });
