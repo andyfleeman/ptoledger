@@ -390,6 +390,7 @@ input[type=file]{display:none;}
       <div class="pill active" onclick="switchTab('bps')" id="pill-bps">Primary</div>
       <div class="pill" onclick="switchTab('bes')" id="pill-bes">Elementary</div>
       <div class="pill-export" onclick="switchTab('export')" id="pill-export">Export</div>
+      <div class="pill-export" onclick="switchTab('access')" id="pill-access" style="display:none;">Access</div>
     </div>
   </div>
   <div class="mob-scroll" id="mob-scroll">
@@ -421,6 +422,22 @@ input[type=file]{display:none;}
       <div class="section-hdr"><div class="section-title">Transaction History</div><div style="font-size:12px;color:var(--gray3);font-weight:600;" id="mob-bes-count"></div></div>
       <div id="mob-bes-list"></div>
     </div>
+    <!-- ACCESS (admin only) -->
+    <div id="mob-tab-access" style="display:none;">
+      <div class="section-hdr"><div class="section-title">Manage Access</div></div>
+      <div style="background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);margin-bottom:14px;">
+        <div id="mob-access-list2" style="padding:12px 16px 0;"></div>
+        <div style="padding:14px 16px;">
+          <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Invite User</div>
+          <div style="display:flex;gap:8px;">
+            <input id="mob-access-email2" type="email" placeholder="Gmail address"
+              style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;-webkit-appearance:none;">
+            <button onclick="addAuthorizedUser2('mob2')" style="padding:10px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;">Add</button>
+          </div>
+          <div id="mob-access-status2" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
+        </div>
+      </div>
+    </div>
     <!-- EXPORT -->
     <div id="mob-tab-export" style="display:none;">
       <div class="section-hdr"><div class="section-title">Account</div></div>
@@ -428,23 +445,6 @@ input[type=file]{display:none;}
         <div class="acct-avatar-lg" id="mob-acct-avatar"></div>
         <div style="flex:1;min-width:0;"><div class="account-name" id="mob-acct-name">Not signed in</div><div class="account-email" id="mob-acct-email"></div></div>
         <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
-      </div>
-
-      <!-- MANAGE ACCESS (admin only) -->
-      <div id="mob-access-section" style="display:none;">
-        <div class="section-hdr"><div class="section-title">Manage Access</div></div>
-        <div style="background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);margin-bottom:14px;">
-          <div id="mob-access-list" style="padding:12px 16px 0;"></div>
-          <div style="padding:14px 16px;">
-            <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Invite User</div>
-            <div style="display:flex;gap:8px;">
-              <input id="mob-access-email" type="email" placeholder="Gmail address"
-                style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;-webkit-appearance:none;">
-              <button onclick="addAuthorizedUser('mob')" style="padding:10px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;">Add</button>
-            </div>
-            <div id="mob-access-status" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
-          </div>
-        </div>
       </div>
 
       <div class="section-hdr"><div class="section-title">Mailing List</div></div>
@@ -471,20 +471,6 @@ input[type=file]{display:none;}
           <div class="export-chevron">›</div>
         </div>
       </div>
-      <!-- MANAGE ACCESS (admin only) -->
-      <div id="desk-access-section" style="display:none;">
-        <div class="section-hdr"><div class="section-title">Manage Access</div></div>
-        <div class="export-card" style="margin-bottom:14px;">
-          <div id="desk-access-list" style="padding:4px 0 8px;"></div>
-          <div style="display:flex;gap:8px;padding-top:8px;border-top:1px solid var(--gray2);">
-            <input id="desk-access-email" type="email" placeholder="Gmail address to invite"
-              style="flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;">
-            <button onclick="addAuthorizedUser('desk')" style="padding:9px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);">Add</button>
-          </div>
-          <div id="desk-access-status" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
-        </div>
-      </div>
-
       <div class="section-hdr"><div class="section-title">Export Data</div></div>
       <div class="export-card" style="margin-bottom:14px;">
         </div><div class="export-chevron">›</div></div>
@@ -519,6 +505,9 @@ input[type=file]{display:none;}
         <div class="desk-divider"></div>
         <div class="desk-nav-item" onclick="deskTab('export')" id="desk-nav-export">
           <span class="desk-nav-icon">📤</span> Export
+        </div>
+        <div class="desk-nav-item" id="desk-nav-access" onclick="deskTab('access')" style="display:none;">
+          <span class="desk-nav-icon">👥</span> Manage Access
         </div>
       </div>
     </div>
@@ -583,6 +572,20 @@ input[type=file]{display:none;}
       </div>
 
       <!-- EXPORT PANEL -->
+      <div id="desk-tab-access" style="display:none;">
+        <div style="max-width:640px;">
+          <h2 style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:18px;">Manage Access</h2>
+          <div class="export-card" style="margin-bottom:14px;">
+            <div id="desk-access-list2" style="padding:4px 0 8px;"></div>
+            <div style="display:flex;gap:8px;padding-top:8px;border-top:1px solid var(--gray2);">
+              <input id="desk-access-email2" type="email" placeholder="Gmail address to invite"
+                style="flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;">
+              <button onclick="addAuthorizedUser2('desk2')" style="padding:9px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);">Add</button>
+            </div>
+            <div id="desk-access-status2" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
+          </div>
+        </div>
+      </div>
       <div id="desk-tab-export" style="display:none;">
         <div style="margin-bottom:24px;">
           <div class="section-title" style="margin-bottom:12px;">Mailing List</div>
@@ -737,7 +740,12 @@ firebase.auth().onAuthStateChanged(async user => {
     updateUserUI(user);
     listenToLedger('bps');
     listenToLedger('bes');
-    loadAuthorizedUsers(); // show Manage Access section for admins on login
+    // Show dedicated Access nav items for admins
+    if (ADMIN_EMAILS.includes(user.email)) {
+      document.getElementById('pill-access').style.display = '';
+      document.getElementById('desk-nav-access').style.display = '';
+    }
+
   } else {
     currentUser = null;
     document.getElementById('login-screen').classList.remove('hidden');
@@ -949,28 +957,32 @@ function toggleExpand(school, layout) {
 
 // ── TAB SWITCHING ─────────────────────────────────────────────────────
 function switchTab(tab) {
-  ['bps','bes','export'].forEach(t => document.getElementById('mob-tab-' + t).style.display = (t === tab) ? 'block' : 'none');
+  ['bps','bes','export','access'].forEach(t => document.getElementById('mob-tab-' + t).style.display = (t === tab) ? 'block' : 'none');
   document.getElementById('pill-bps').className = 'pill' + (tab === 'bps' ? ' active' : '');
   document.getElementById('pill-bes').className = 'pill' + (tab === 'bes' ? ' active' : '');
   document.getElementById('pill-export').className = 'pill-export' + (tab === 'export' ? ' active' : '');
+  document.getElementById('pill-access').className = 'pill-export' + (tab === 'access' ? ' active' : '');
   activeTab = tab;
   if (tab === 'export') { loadRecipients(); loadAuthorizedUsers(); }
+  if (tab === 'access') { loadAuthorizedUsers2(); }
   document.getElementById('mob-scroll').scrollTop = 0;
 }
 
 function deskTab(tab) {
-  ['bps','bes','export'].forEach(t => document.getElementById('desk-tab-' + t).style.display = (t === tab) ? 'block' : 'none');
+  ['bps','bes','export','access'].forEach(t => document.getElementById('desk-tab-' + t).style.display = (t === tab) ? 'block' : 'none');
   document.getElementById('desk-nav-bps').className = 'desk-nav-item' + (tab === 'bps' ? ' active' : '');
   document.getElementById('desk-nav-bes').className = 'desk-nav-item' + (tab === 'bes' ? ' active' : '');
   document.getElementById('desk-nav-export').className = 'desk-nav-item' + (tab === 'export' ? ' active' : '');
+  document.getElementById('desk-nav-access').className = 'desk-nav-item' + (tab === 'access' ? ' active' : '');
   activeTab = tab;
-  document.getElementById('desk-add-btn').style.display = (tab === 'export') ? 'none' : 'flex';
-  const titles = { bps: ['Primary School — BPS', 'Brookland Primary School'], bes: ['Elementary School — BES', 'Brookland Elementary School'], export: ['Export', 'Download ledger data or email a statement'] };
+  document.getElementById('desk-add-btn').style.display = (tab === 'export' || tab === 'access') ? 'none' : 'flex';
+  const titles = { bps: ['Primary School — BPS', 'Brookland Primary School'], bes: ['Elementary School — BES', 'Brookland Elementary School'], export: ['Export', 'Download ledger data or email a statement'], access: ['Manage Access', 'Invite or remove users'] };
   document.getElementById('desk-topbar-title').textContent = titles[tab][0];
   document.getElementById('desk-topbar-sub').textContent = titles[tab][1];
-  document.getElementById('desk-sidebar-summary').style.display = (tab === 'export') ? 'none' : 'block';
-  if (tab !== 'export') updateSidebarSummary(tab, cachedData[tab]);
-  if (tab === 'export') { loadRecipients(); loadAuthorizedUsers();; loadAuthorizedUsers(); }
+  document.getElementById('desk-sidebar-summary').style.display = (tab === 'export' || tab === 'access') ? 'none' : 'block';
+  if (tab !== 'export' && tab !== 'access') updateSidebarSummary(tab, cachedData[tab]);
+  if (tab === 'export') { loadRecipients(); loadAuthorizedUsers(); }
+  if (tab === 'access') { loadAuthorizedUsers2(); }
   document.getElementById('desk-content').scrollTop = 0;
 }
 
@@ -1627,16 +1639,13 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 let _authorizedUsers = [];
 
 async function loadAuthorizedUsers() {
+  // kept for renderAccessList() compatibility — no longer shows/hides removed elements
   if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email)) return;
-  // Show the section immediately — admin is confirmed, collection may just be empty
-  document.getElementById('mob-access-section').style.display = 'block';
-  document.getElementById('desk-access-section').style.display = 'block';
   try {
     const snap = await db.collection('pto').doc('brookland').collection('authorizedUsers').get();
     _authorizedUsers = [];
     snap.forEach(d => _authorizedUsers.push({ id: d.id, ...d.data() }));
     _authorizedUsers.sort((a,b) => (a.email||'').localeCompare(b.email||''));
-    renderAccessList();
   } catch(e) {
     console.error('loadAuthorizedUsers:', e);
   }
@@ -1703,6 +1712,87 @@ async function removeAuthorizedUser(id, email) {
     alert('Error removing user: ' + e.message);
   }
 }
+
+// ── ACCESS TAB (dedicated module) ───────────────────────────────────────
+async function loadAuthorizedUsers2() {
+  if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email)) return;
+  try {
+    const snap = await db.collection('pto').doc('brookland').collection('authorizedUsers').get();
+    _authorizedUsers = [];
+    snap.forEach(d => _authorizedUsers.push({ id: d.id, ...d.data() }));
+    _authorizedUsers.sort((a,b) => (a.email||'').localeCompare(b.email||''));
+    renderAccessList2();
+  } catch(e) {
+    console.error('loadAuthorizedUsers2:', e);
+  }
+}
+
+function renderAccessList2() {
+  ['mob2','desk2'].forEach(function(prefix) {
+    const container = document.getElementById(prefix === 'mob2' ? 'mob-access-list2' : 'desk-access-list2');
+    if (!container) return;
+    container.innerHTML = '';
+    if (!_authorizedUsers.length) {
+      const p = document.createElement('div');
+      p.style.cssText = 'font-size:13px;color:var(--gray3);padding:8px 0;';
+      p.textContent = 'No additional users yet.';
+      container.appendChild(p);
+      return;
+    }
+    _authorizedUsers.forEach(function(u) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--gray2);';
+      const emailSpan = document.createElement('span');
+      emailSpan.style.cssText = 'font-size:14px;font-weight:600;color:var(--dark);';
+      emailSpan.textContent = u.email;
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'Remove';
+      removeBtn.style.cssText = 'padding:5px 12px;border-radius:8px;background:var(--gray1);border:1px solid var(--gray2);font-size:12px;font-weight:700;color:var(--expense);cursor:pointer;font-family:var(--font);';
+      removeBtn.onclick = function() { removeAuthorizedUser2(u.id, u.email); };
+      row.appendChild(emailSpan);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+  });
+}
+
+async function addAuthorizedUser2(prefix) {
+  const inputId = prefix === 'mob2' ? 'mob-access-email2' : 'desk-access-email2';
+  const statusId = prefix === 'mob2' ? 'mob-access-status2' : 'desk-access-status2';
+  const input = document.getElementById(inputId);
+  const status = document.getElementById(statusId);
+  const email = (input.value || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) { status.style.color='var(--red)'; status.textContent='Enter a valid email.'; return; }
+  if (ADMIN_EMAILS.includes(email)) { status.style.color='var(--red)'; status.textContent='That\'s an admin account — already has access.'; return; }
+  if (_authorizedUsers.find(u => u.email === email)) { status.style.color='var(--red)'; status.textContent='Already has access.'; return; }
+  try {
+    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(email).set({ email, addedBy: currentUser.email, added: new Date().toISOString() });
+    _authorizedUsers.push({ id: email, email });
+    _authorizedUsers.sort((a,b) => a.email.localeCompare(b.email));
+    renderAccessList2();
+    renderAccessList(); // keep old export-tab panel in sync
+    input.value = '';
+    status.style.color = 'var(--green)';
+    status.textContent = email + ' added.';
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = 'Error: ' + e.message;
+  }
+}
+
+async function removeAuthorizedUser2(id, email) {
+  if (!confirm('Remove ' + email + '?')) return;
+  try {
+    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(id).delete();
+    _authorizedUsers = _authorizedUsers.filter(u => u.id !== id);
+    renderAccessList2();
+    renderAccessList(); // keep old export-tab panel in sync
+  } catch(e) {
+    alert('Error removing user: ' + e.message);
+  }
+}
+
 
 </script>
 
