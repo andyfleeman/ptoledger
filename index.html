@@ -430,6 +430,23 @@ input[type=file]{display:none;}
         <button class="signout-btn" onclick="doSignOut()">Sign Out</button>
       </div>
 
+      <!-- MANAGE ACCESS (admin only) -->
+      <div id="mob-access-section" style="display:none;">
+        <div class="section-hdr"><div class="section-title">Manage Access</div></div>
+        <div style="background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);margin-bottom:14px;">
+          <div id="mob-access-list" style="padding:12px 16px 0;"></div>
+          <div style="padding:14px 16px;">
+            <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Invite User</div>
+            <div style="display:flex;gap:8px;">
+              <input id="mob-access-email" type="email" placeholder="Gmail address"
+                style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;-webkit-appearance:none;">
+              <button onclick="addAuthorizedUser('mob')" style="padding:10px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;">Add</button>
+            </div>
+            <div id="mob-access-status" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="section-hdr"><div class="section-title">Mailing List</div></div>
       <div style="background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);margin-bottom:14px;">
         <div id="mob-mailing-list-items" style="padding:12px 16px 0;"></div>
@@ -454,9 +471,23 @@ input[type=file]{display:none;}
           <div class="export-chevron">›</div>
         </div>
       </div>
+      <!-- MANAGE ACCESS (admin only) -->
+      <div id="desk-access-section" style="display:none;">
+        <div class="section-hdr"><div class="section-title">Manage Access</div></div>
+        <div class="export-card" style="margin-bottom:14px;">
+          <div id="desk-access-list" style="padding:4px 0 8px;"></div>
+          <div style="display:flex;gap:8px;padding-top:8px;border-top:1px solid var(--gray2);">
+            <input id="desk-access-email" type="email" placeholder="Gmail address to invite"
+              style="flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;">
+            <button onclick="addAuthorizedUser('desk')" style="padding:9px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);">Add</button>
+          </div>
+          <div id="desk-access-status" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
+        </div>
+      </div>
+
       <div class="section-hdr"><div class="section-title">Export Data</div></div>
       <div class="export-card" style="margin-bottom:14px;">
-        <div class="export-row" onclick="exportCSV('both')"><div class="export-ico red">📤</div><div><div class="export-label">Export Both Ledgers</div><div class="export-sub">BPS + BES combined CSV</div></div><div class="export-chevron">›</div></div>
+        </div><div class="export-chevron">›</div></div>
         <div class="export-row" onclick="exportCSV('bps')"><div class="export-ico blue">📄</div><div><div class="export-label">Export Primary (BPS)</div><div class="export-sub">Brookland Primary School only</div></div><div class="export-chevron">›</div></div>
         <div class="export-row" onclick="exportCSV('bes')"><div class="export-ico green">📄</div><div><div class="export-label">Export Elementary (BES)</div><div class="export-sub">Brookland Elementary School only</div></div><div class="export-chevron">›</div></div>
       </div>
@@ -581,7 +612,7 @@ input[type=file]{display:none;}
         </div>
         <div class="section-title" style="margin-bottom:12px;">Export Data</div>
         <div class="desk-export-grid">
-          <div class="desk-export-card" onclick="exportCSV('both')"><div class="desk-export-ico red">📤</div><div><div class="desk-export-label">Export Both Ledgers</div><div class="desk-export-sub">BPS + BES as one CSV file</div></div></div>
+          
           <div class="desk-export-card" onclick="exportCSV('bps')"><div class="desk-export-ico blue">📄</div><div><div class="desk-export-label">Export Primary (BPS)</div><div class="desk-export-sub">Brookland Primary School only</div></div></div>
           <div class="desk-export-card" onclick="exportCSV('bes')"><div class="desk-export-ico green">📄</div><div><div class="desk-export-label">Export Elementary (BES)</div><div class="desk-export-sub">Brookland Elementary School only</div></div></div>
         </div>
@@ -656,6 +687,9 @@ const FIREBASE_CONFIG = {
 const _EK = "AxkpPhE8ES41HBoAMwlRQjFRDCs1dwdWFzEIAlczdSoWZhESPhMj";
 const _ES = "BPS_BES_PTO_Bearcats_Brookland";
 function _dk() {
+  // Prefer user-saved key from localStorage, fall back to baked-in
+  const saved = localStorage.getItem('pto_gemini_key');
+  if (saved && saved.trim() && !saved.includes('•')) return saved.trim();
   const b = atob(_EK), s = _ES; let r = '';
   for (let i = 0; i < b.length; i++) r += String.fromCharCode(b.charCodeAt(i) ^ s.charCodeAt(i % s.length));
   return r;
@@ -676,8 +710,28 @@ const isDesktop = () => window.innerWidth >= 769;
 firebase.initializeApp(FIREBASE_CONFIG);
 db = firebase.firestore();
 
-firebase.auth().onAuthStateChanged(user => {
+// ── ACCESS CONTROL ────────────────────────────────────────────────────
+const ADMIN_EMAIL = 'abflee@gmail.com';
+
+async function checkAccess(user) {
+  if (user.email === ADMIN_EMAIL) return true;
+  try {
+    // Doc ID is the email address — single efficient lookup
+    const doc = await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(user.email.toLowerCase()).get();
+    return doc.exists;
+  } catch(e) {
+    return false;
+  }
+}
+
+onAuthStateChanged(async user => {
   if (user) {
+    const allowed = await checkAccess(user);
+    if (!allowed) {
+      firebase.auth().signOut();
+      alert('Access denied.\n\n' + user.email + ' is not authorized.\nContact the PTO administrator to request access.');
+      return;
+    }
     currentUser = user;
     document.getElementById('login-screen').classList.add('hidden');
     updateUserUI(user);
@@ -724,7 +778,7 @@ function updateUserUI(user) {
 function listenToLedger(school) {
   if (!currentUser || !db) return;
   showSync(school, true);
-  const col = db.collection('users').doc(currentUser.uid).collection(school);
+  const col = db.collection('pto').doc('brookland').collection(school);
   if (unsub[school]) unsub[school]();
   unsub[school] = col.orderBy('date', 'desc').onSnapshot(snap => {
     const data = [];
@@ -742,11 +796,11 @@ function showSync(school, show) {
 }
 async function addTx(school, tx) {
   if (!currentUser || !db) return;
-  await db.collection('users').doc(currentUser.uid).collection(school).add(tx);
+  await db.collection('pto').doc('brookland').collection(school).add(tx);
 }
 async function deleteTx(school, id) {
   if (!currentUser || !db) return;
-  await db.collection('users').doc(currentUser.uid).collection(school).doc(id).delete();
+  await db.collection('pto').doc('brookland').collection(school).doc(id).delete();
 }
 
 // ── FORMAT ────────────────────────────────────────────────────────────
@@ -892,7 +946,7 @@ function switchTab(tab) {
   document.getElementById('pill-bes').className = 'pill' + (tab === 'bes' ? ' active' : '');
   document.getElementById('pill-export').className = 'pill-export' + (tab === 'export' ? ' active' : '');
   activeTab = tab;
-  if (tab === 'export') loadRecipients();
+  if (tab === 'export') { loadRecipients(); loadAuthorizedUsers(); }
   document.getElementById('mob-scroll').scrollTop = 0;
 }
 
@@ -908,7 +962,7 @@ function deskTab(tab) {
   document.getElementById('desk-topbar-sub').textContent = titles[tab][1];
   document.getElementById('desk-sidebar-summary').style.display = (tab === 'export') ? 'none' : 'block';
   if (tab !== 'export') updateSidebarSummary(tab, cachedData[tab]);
-  if (tab === 'export') loadRecipients();
+  if (tab === 'export') { loadRecipients(); loadAuthorizedUsers();; loadAuthorizedUsers(); }
   document.getElementById('desk-content').scrollTop = 0;
 }
 
@@ -1025,7 +1079,7 @@ async function scanWithGemini(base64, mimeType) {
     'Example of correct response: {"amount":47.23,"vendor":"Walmart","description":"School supplies","date":"2025-05-01"}'
   ].join(' ');
 
-  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  const models = ['gemini-2.5-flash-preview-05-20', 'gemini-2.0-flash', 'gemini-1.5-flash'];
   let resp, lastErr;
 
   for (const model of models) {
@@ -1114,7 +1168,7 @@ async function saveTransaction() {
     const hasCorrected = hasCorrectedAmount || hasCorrectedVendor || hasCorrectedDesc;
     // Always save scan feedback — corrections noted where they differ
     try {
-      await db.collection('users').doc(currentUser.uid).collection('scanFeedback').add({
+      await db.collection('pto').doc('brookland').collection('scanFeedback').add({
         created: new Date().toISOString(),
         aiResult: ai,
         userResult: { amount: userAmount, vendor: userVendor, description: userDesc, date },
@@ -1207,7 +1261,7 @@ function exportCSV(which) {
   const schools = which === 'both' ? ['bps', 'bes'] : [which];
   let csv = 'School,Date,Type,Description,Amount,Running Balance\n';
   Promise.all(schools.map(school =>
-    db.collection('users').doc(currentUser.uid).collection(school).orderBy('date', 'asc').get().then(snap => {
+    db.collection('pto').doc('brookland').collection(school).orderBy('date', 'asc').get().then(snap => {
       const rows = []; let run = 0;
       snap.forEach(doc => {
         const t = doc.data();
@@ -1268,7 +1322,7 @@ function getGeminiKey() {
 // EMAIL STATEMENT FEATURE
 // ══════════════════════════════════════════════
 
-let emailSchool = 'bps';
+let emailSchool = 'both';
 let gmailAccessToken = null;
 
 // ── OPEN MODAL ────────────────────────────────
@@ -1282,11 +1336,22 @@ function openEmailModal() {
   document.getElementById('email-modal').classList.remove('hidden');
 }
 
-function setEmailSchool(s) {
-  emailSchool = s;
-  ['bps','bes','both'].forEach(k => {
-    document.getElementById('em-btn-'+k).className = 'school-btn' + (k === s ? ' active' : '');
-  });
+function toggleEmailSchool(s) {
+  // Toggle the clicked school; ensure at least one is always selected
+  const bpsBtn = document.getElementById('em-btn-bps');
+  const besBtn = document.getElementById('em-btn-bes');
+  const bpsOn = bpsBtn.classList.contains('active');
+  const besOn = besBtn.classList.contains('active');
+  if (s === 'bps') {
+    if (bpsOn && !besOn) return; // must keep at least one
+    bpsBtn.classList.toggle('active');
+  } else {
+    if (besOn && !bpsOn) return;
+    besBtn.classList.toggle('active');
+  }
+  const nowBps = bpsBtn.classList.contains('active');
+  const nowBes = besBtn.classList.contains('active');
+  emailSchool = (nowBps && nowBes) ? 'both' : (nowBps ? 'bps' : 'bes');
 }
 
 function setDatePreset(preset) {
@@ -1316,7 +1381,7 @@ let _mailingList = [];
 
 async function loadRecipients() {
   try {
-    const snap = await db.collection('users').doc(currentUser.uid).collection('mailingList').get();
+    const snap = await db.collection('pto').doc('brookland').collection('mailingList').get();
     _mailingList = [];
     snap.forEach(doc => _mailingList.push({ id: doc.id, ...doc.data() }));
     _mailingList.sort((a, b) => (a.added || '').localeCompare(b.added || ''));
@@ -1432,7 +1497,7 @@ async function mlAdd() {
   try {
     var docData = { email: email, added: new Date().toISOString() };
     if (name) docData.name = name;
-    var ref = await db.collection('users').doc(currentUser.uid).collection('mailingList').add(docData);
+    var ref = await db.collection('pto').doc('brookland').collection('mailingList').add(docData);
     _mailingList.push({ id: ref.id, email: email, name: name || null, added: docData.added });
     _mailingList.sort(function(a, b) { return (a.added || '').localeCompare(b.added || ''); });
     if (nameEl) nameEl.value = '';
@@ -1449,7 +1514,7 @@ async function mlAdd() {
 async function mlRemove(id, label) {
   if (!confirm('Remove ' + label + ' from the mailing list?')) return;
   try {
-    await db.collection('users').doc(currentUser.uid).collection('mailingList').doc(id).delete();
+    await db.collection('pto').doc('brookland').collection('mailingList').doc(id).delete();
     _mailingList = _mailingList.filter(function(r) { return r.id !== id; });
     renderMailingList();
     renderRecipientPreview();
@@ -1546,6 +1611,87 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 `;
 }
 
+
+// ── ACCESS MANAGEMENT (admin only) ─────────────────────────────────────
+let _authorizedUsers = [];
+
+async function loadAuthorizedUsers() {
+  if (!currentUser || currentUser.email !== ADMIN_EMAIL) return;
+  try {
+    const snap = await db.collection('pto').doc('brookland').collection('authorizedUsers').get();
+    _authorizedUsers = [];
+    snap.forEach(d => _authorizedUsers.push({ id: d.id, ...d.data() }));
+    _authorizedUsers.sort((a,b) => (a.email||'').localeCompare(b.email||''));
+    renderAccessList();
+    document.getElementById('mob-access-section').style.display = 'block';
+    document.getElementById('desk-access-section').style.display = 'block';
+  } catch(e) {
+    console.error('loadAuthorizedUsers:', e);
+  }
+}
+
+function renderAccessList() {
+  ['mob','desk'].forEach(prefix => {
+    const container = document.getElementById(prefix+'-access-list');
+    if (!container) return;
+    container.innerHTML = '';
+    if (_authorizedUsers.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'font-size:13px;color:var(--gray4);padding:8px 0;';
+      empty.textContent = 'No additional users. Only you have access.';
+      container.appendChild(empty);
+      return;
+    }
+    _authorizedUsers.forEach(u => {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray2);';
+      const info = document.createElement('div');
+      info.style.cssText = 'font-size:14px;color:var(--text);';
+      info.textContent = u.email;
+      const btn = document.createElement('button');
+      btn.textContent = 'Remove';
+      btn.style.cssText = 'padding:5px 12px;border-radius:8px;background:#fff;border:1.5px solid var(--red);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);';
+      btn.onclick = () => removeAuthorizedUser(u.id, u.email);
+      row.appendChild(info);
+      row.appendChild(btn);
+      container.appendChild(row);
+    });
+  });
+}
+
+async function addAuthorizedUser(prefix) {
+  const input = document.getElementById(prefix+'-access-email');
+  const status = document.getElementById(prefix+'-access-status');
+  const email = (input.value || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) { status.style.color='var(--red)'; status.textContent='Enter a valid email.'; return; }
+  if (email === ADMIN_EMAIL) { status.style.color='var(--red)'; status.textContent='That\x27s the admin account \u2014 already has access.'; return; }
+  if (_authorizedUsers.find(u => u.email === email)) { status.style.color='var(--red)'; status.textContent='Already has access.'; return; }
+  try {
+    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(email).set({ email, addedBy: currentUser.email, added: new Date().toISOString() });
+    _authorizedUsers.push({ id: email, email });
+    _authorizedUsers.sort((a,b) => a.email.localeCompare(b.email));
+    renderAccessList();
+    input.value = '';
+    status.style.color = 'green';
+    status.textContent = '✅ ' + email + ' can now access the ledger.';
+    setTimeout(() => { status.textContent = ''; }, 4000);
+  } catch(e) {
+    status.style.color = 'var(--red)';
+    status.textContent = 'Error: ' + e.message;
+  }
+}
+
+async function removeAuthorizedUser(id, email) {
+  if (!confirm('Remove access for ' + email + '?')) return;
+  try {
+    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(email).delete();
+    _authorizedUsers = _authorizedUsers.filter(u => u.email !== email);
+    renderAccessList();
+  } catch(e) {
+    alert('Error removing user: ' + e.message);
+  }
+}
+
 </script>
 
 <!-- EMAIL STATEMENT MODAL -->
@@ -1562,9 +1708,8 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
       <div class="email-section">
         <div class="email-section-title">School</div>
         <div class="school-toggle">
-          <button class="school-btn active" id="em-btn-bps" onclick="setEmailSchool('bps')">Primary</button>
-          <button class="school-btn" id="em-btn-bes" onclick="setEmailSchool('bes')">Elementary</button>
-          <button class="school-btn" id="em-btn-both" onclick="setEmailSchool('both')">Both</button>
+          <button class="school-btn active" id="em-btn-bps" onclick="toggleEmailSchool('bps')">Primary</button>
+          <button class="school-btn active" id="em-btn-bes" onclick="toggleEmailSchool('bes')">Elementary</button>
         </div>
       </div>
 
