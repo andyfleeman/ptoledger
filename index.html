@@ -424,19 +424,24 @@ input[type=file]{display:none;}
     </div>
     <!-- ACCESS (admin only) -->
     <div id="mob-tab-access" style="display:none;">
-      <div class="section-hdr"><div class="section-title">Manage Access</div></div>
-      <div style="background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);margin-bottom:14px;">
-        <div id="mob-access-list2" style="padding:12px 16px 0;"></div>
-        <div style="padding:14px 16px;">
-          <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Invite User</div>
-          <div style="display:flex;gap:8px;">
-            <input id="mob-access-email2" type="email" placeholder="Gmail address"
-              style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;-webkit-appearance:none;">
-            <button onclick="addAuthorizedUser2('mob2')" style="padding:10px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;">Add</button>
-          </div>
-          <div id="mob-access-status2" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
-        </div>
+
+      <!-- Current users -->
+      <div class="section-hdr"><div class="section-title">Who Has Access</div></div>
+      <div class="ledger-card" style="margin-bottom:14px;">
+        <div id="mob-access-list2"></div>
       </div>
+
+      <!-- Invite -->
+      <div class="section-hdr"><div class="section-title">Invite User</div></div>
+      <div style="background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--card-shadow);margin-bottom:14px;">
+        <div style="display:flex;gap:8px;">
+          <input id="mob-access-email2" type="email" placeholder="Gmail address" autocomplete="email"
+            style="flex:1;padding:11px 13px;border-radius:10px;border:1.5px solid var(--gray2);font-size:15px;font-family:var(--font);background:var(--gray1);outline:none;-webkit-appearance:none;color:var(--black);">
+          <button onclick="addAuthorizedUser2('mob2')" style="padding:11px 20px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:15px;font-weight:800;cursor:pointer;font-family:var(--font);flex-shrink:0;">Add</button>
+        </div>
+        <div id="mob-access-status2" style="font-size:13px;margin-top:8px;font-weight:600;min-height:18px;"></div>
+      </div>
+
     </div>
     <!-- EXPORT -->
     <div id="mob-tab-export" style="display:none;">
@@ -574,16 +579,24 @@ input[type=file]{display:none;}
       <!-- EXPORT PANEL -->
       <div id="desk-tab-access" style="display:none;">
         <div style="max-width:640px;">
-          <h2 style="font-size:20px;font-weight:800;color:var(--dark);margin-bottom:18px;">Manage Access</h2>
-          <div class="export-card" style="margin-bottom:14px;">
-            <div id="desk-access-list2" style="padding:4px 0 8px;"></div>
-            <div style="display:flex;gap:8px;padding-top:8px;border-top:1px solid var(--gray2);">
-              <input id="desk-access-email2" type="email" placeholder="Gmail address to invite"
-                style="flex:1;padding:9px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;">
-              <button onclick="addAuthorizedUser2('desk2')" style="padding:9px 18px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);">Add</button>
-            </div>
-            <div id="desk-access-status2" style="font-size:12px;margin-top:6px;font-weight:600;min-height:16px;"></div>
+
+          <!-- Current users -->
+          <div class="section-title" style="margin-bottom:12px;">Who Has Access</div>
+          <div class="desk-table-card" style="margin-bottom:28px;">
+            <div id="desk-access-list2"></div>
           </div>
+
+          <!-- Invite -->
+          <div class="section-title" style="margin-bottom:12px;">Invite User</div>
+          <div style="background:var(--white);border-radius:16px;padding:20px;box-shadow:var(--card-shadow);">
+            <div style="display:flex;gap:10px;align-items:center;">
+              <input id="desk-access-email2" type="email" placeholder="Gmail address to invite" autocomplete="email"
+                style="flex:1;padding:11px 14px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;color:var(--black);">
+              <button onclick="addAuthorizedUser2('desk2')" style="padding:11px 24px;border-radius:10px;background:var(--red);color:#fff;border:none;font-size:14px;font-weight:800;cursor:pointer;font-family:var(--font);white-space:nowrap;">Add</button>
+            </div>
+            <div id="desk-access-status2" style="font-size:13px;margin-top:10px;font-weight:600;min-height:18px;"></div>
+          </div>
+
         </div>
       </div>
       <div id="desk-tab-export" style="display:none;">
@@ -1347,10 +1360,10 @@ let gmailAccessToken = null;
 
 // ── OPEN MODAL ────────────────────────────────
 function openEmailModal() {
-  // Reset both schools active (setEmailSchool doesn't exist; toggleEmailSchool is the real fn)
-  document.getElementById('em-btn-bps').classList.add('active');
-  document.getElementById('em-btn-bes').classList.add('active');
-  emailSchool = 'both';
+  // Start with neither school selected — let the user choose
+  document.getElementById('em-btn-bps').classList.remove('active');
+  document.getElementById('em-btn-bes').classList.remove('active');
+  emailSchool = '';
   setDatePreset('this-month');
   loadRecipients(); // refresh mailing list preview
   document.getElementById('send-status').textContent = '';
@@ -1360,21 +1373,14 @@ function openEmailModal() {
 }
 
 function toggleEmailSchool(s) {
-  // Toggle the clicked school; ensure at least one is always selected
+  // Free toggle — user can select/deselect either or both
   const bpsBtn = document.getElementById('em-btn-bps');
   const besBtn = document.getElementById('em-btn-bes');
-  const bpsOn = bpsBtn.classList.contains('active');
-  const besOn = besBtn.classList.contains('active');
-  if (s === 'bps') {
-    if (bpsOn && !besOn) return; // must keep at least one
-    bpsBtn.classList.toggle('active');
-  } else {
-    if (besOn && !bpsOn) return;
-    besBtn.classList.toggle('active');
-  }
+  if (s === 'bps') bpsBtn.classList.toggle('active');
+  else besBtn.classList.toggle('active');
   const nowBps = bpsBtn.classList.contains('active');
   const nowBes = besBtn.classList.contains('active');
-  emailSchool = (nowBps && nowBes) ? 'both' : (nowBps ? 'bps' : 'bes');
+  emailSchool = (nowBps && nowBes) ? 'both' : (nowBps ? 'bps' : (nowBes ? 'bes' : ''));
 }
 
 function setDatePreset(preset) {
@@ -1728,32 +1734,77 @@ async function loadAuthorizedUsers2() {
 }
 
 function renderAccessList2() {
-  ['mob2','desk2'].forEach(function(prefix) {
-    const container = document.getElementById(prefix === 'mob2' ? 'mob-access-list2' : 'desk-access-list2');
+  const isMob = document.getElementById('mob-tab-access').style.display !== 'none';
+
+  // ── mobile list ──────────────────────────────────────────────────────
+  (function() {
+    const container = document.getElementById('mob-access-list2');
     if (!container) return;
     container.innerHTML = '';
     if (!_authorizedUsers.length) {
-      const p = document.createElement('div');
-      p.style.cssText = 'font-size:13px;color:var(--gray3);padding:8px 0;';
-      p.textContent = 'No additional users yet.';
-      container.appendChild(p);
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">No additional users</div><div class="empty-sub">Use Invite User below to add access</div></div>';
       return;
     }
     _authorizedUsers.forEach(function(u) {
       const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:.5px solid var(--gray2);';
+      row.className = 'ledger-item';
+      row.style.cursor = 'default';
+      const icon = document.createElement('div');
+      icon.className = 'tx-icon inc';
+      icon.textContent = '👤';
+      const main = document.createElement('div');
+      main.className = 'tx-main';
+      const email = document.createElement('div');
+      email.className = 'tx-desc';
+      email.textContent = u.email;
+      main.appendChild(email);
+      const removeBtn = document.createElement('button');
+      removeBtn.textContent = 'Remove';
+      removeBtn.className = 'mob-del-btn';
+      removeBtn.style.cssText = 'width:auto;padding:5px 12px;font-size:12px;border-radius:8px;';
+      removeBtn.onclick = function() { removeAuthorizedUser2(u.id, u.email); };
+      row.appendChild(icon);
+      row.appendChild(main);
+      row.appendChild(removeBtn);
+      container.appendChild(row);
+    });
+  })();
+
+  // ── desktop list ─────────────────────────────────────────────────────
+  (function() {
+    const container = document.getElementById('desk-access-list2');
+    if (!container) return;
+    container.innerHTML = '';
+    // header row
+    const hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:.5px solid var(--gray2);background:var(--gray1);';
+    hdr.innerHTML = '<span style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;">Email</span><span style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;">Action</span>';
+    container.appendChild(hdr);
+    if (!_authorizedUsers.length) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'padding:24px 20px;font-size:14px;color:var(--gray3);text-align:center;';
+      empty.textContent = 'No additional users yet.';
+      container.appendChild(empty);
+      return;
+    }
+    _authorizedUsers.forEach(function(u) {
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:.5px solid var(--gray2);';
+      row.style.cssText += 'transition:background .15s;';
+      row.onmouseover = function() { this.style.background = 'var(--gray1)'; };
+      row.onmouseout  = function() { this.style.background = ''; };
       const emailSpan = document.createElement('span');
-      emailSpan.style.cssText = 'font-size:14px;font-weight:600;color:var(--dark);';
+      emailSpan.style.cssText = 'font-size:14px;font-weight:600;color:var(--black);';
       emailSpan.textContent = u.email;
       const removeBtn = document.createElement('button');
       removeBtn.textContent = 'Remove';
-      removeBtn.style.cssText = 'padding:5px 12px;border-radius:8px;background:var(--gray1);border:1px solid var(--gray2);font-size:12px;font-weight:700;color:var(--expense);cursor:pointer;font-family:var(--font);';
+      removeBtn.className = 'desk-del-btn';
       removeBtn.onclick = function() { removeAuthorizedUser2(u.id, u.email); };
       row.appendChild(emailSpan);
       row.appendChild(removeBtn);
       container.appendChild(row);
     });
-  });
+  })();
 }
 
 async function addAuthorizedUser2(prefix) {
