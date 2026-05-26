@@ -1334,7 +1334,10 @@ let gmailAccessToken = null;
 
 // ── OPEN MODAL ────────────────────────────────
 function openEmailModal() {
-  setEmailSchool('bps');
+  // Reset both schools active (setEmailSchool doesn't exist; toggleEmailSchool is the real fn)
+  document.getElementById('em-btn-bps').classList.add('active');
+  document.getElementById('em-btn-bes').classList.add('active');
+  emailSchool = 'both';
   setDatePreset('this-month');
   loadRecipients(); // refresh mailing list preview
   document.getElementById('send-status').textContent = '';
