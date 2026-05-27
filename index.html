@@ -478,7 +478,6 @@ input[type=file]{display:none;}
       </div>
       <div class="section-hdr"><div class="section-title">Export Data</div></div>
       <div class="export-card" style="margin-bottom:14px;">
-        </div><div class="export-chevron">›</div></div>
         <div class="export-row" onclick="exportCSV('bps')"><div class="export-ico blue">📄</div><div><div class="export-label">Export Primary (BPS)</div><div class="export-sub">Brookland Primary School only</div></div><div class="export-chevron">›</div></div>
         <div class="export-row" onclick="exportCSV('bes')"><div class="export-ico green">📄</div><div><div class="export-label">Export Elementary (BES)</div><div class="export-sub">Brookland Elementary School only</div></div><div class="export-chevron">›</div></div>
       </div>
@@ -1845,94 +1844,188 @@ async function removeAuthorizedUser2(id, email) {
 }
 
 
-// ── SEND BALANCE STATEMENT (mailto) ──────────────────────────────────────
+// ── SEND BALANCE STATEMENT (mailto – themed HTML) ───────────────────────
 function sendBalanceEmail() {
   // Validate school selection
   if (!emailSchool) {
-    const s = document.getElementById('send-status');
+    var s = document.getElementById('send-status');
     s.style.color = 'var(--expense)';
     s.textContent = 'Please select at least one school.';
     return;
   }
-
-  const dateFrom = document.getElementById('em-date-from').value;
-  const dateTo   = document.getElementById('em-date-to').value;
+  var dateFrom = document.getElementById('em-date-from').value;
+  var dateTo   = document.getElementById('em-date-to').value;
   if (!dateFrom || !dateTo) {
-    const s = document.getElementById('send-status');
+    var s = document.getElementById('send-status');
     s.style.color = 'var(--expense)';
     s.textContent = 'Please select a date range.';
     return;
   }
-
-  // Validate mailing list
   if (!_mailingList.length) {
-    const s = document.getElementById('send-status');
+    var s = document.getElementById('send-status');
     s.style.color = 'var(--expense)';
     s.textContent = 'No recipients in mailing list.';
     return;
   }
 
-  const from = new Date(dateFrom + 'T00:00:00');
-  const to   = new Date(dateTo   + 'T23:59:59');
+  var from = new Date(dateFrom + 'T00:00:00');
+  var to   = new Date(dateTo   + 'T23:59:59');
+  var schools = emailSchool === 'both' ? ['bps','bes'] : [emailSchool];
+  var schoolNames = { bps: 'Primary (BPS)', bes: 'Elementary (BES)' };
+  var schoolColors = { bps: '#1A6FBF', bes: '#1E8A3C' };
 
-  // Build summary for each selected school
-  const schools = emailSchool === 'both' ? ['bps','bes'] : [emailSchool];
-  const schoolNames = { bps: 'Primary (BPS)', bes: 'Elementary (BES)' };
+  // ── Build themed HTML ─────────────────────────────────────────────────
+  var RED = '#B01E24';
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>Brookland PTO Balance Statement</title></head>' +
+    '<body style="margin:0;padding:0;background:#E8E8ED;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue',Arial,sans-serif;">' +
 
-  let bodyLines = [];
-  bodyLines.push('Brookland PTO — Balance Statement');
-  bodyLines.push('Period: ' + dateFrom + ' to ' + dateTo);
-  bodyLines.push('');
+    // ── Header pill bar ──────────────────────────────────────────────────
+    '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:' + RED + ';">' +
+    '<tr><td style="padding:24px 20px 20px;">' +
+      '<p style="margin:0 0 2px;font-size:10px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.8px;text-transform:uppercase;">BROOKLAND PUBLIC SCHOOLS · AR</p>' +
+      '<p style="margin:0 0 16px;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.4px;">PTO Ledger</p>' +
+      // school pills
+      '<table cellpadding="0" cellspacing="0" border="0"><tr>';
 
   schools.forEach(function(school) {
-    const txns = (cachedData[school] || [])
+    var col = schoolColors[school];
+    html += '<td style="padding-right:8px;">' +
+      '<span style="display:inline-block;padding:7px 16px;border-radius:20px;' +
+        'background:#fff;color:' + RED + ';font-size:12px;font-weight:700;">' +
+      schoolNames[school] + '</span></td>';
+  });
+
+  html += '</tr></table>' +
+    '<p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.75);">' +
+      dateFrom + ' – ' + dateTo + '</p>' +
+    '</td></tr></table>';
+
+  // ── Per-school cards ─────────────────────────────────────────────────
+  html += '<div style="max-width:600px;margin:0 auto;padding:16px;">';
+
+  schools.forEach(function(school) {
+    var col = schoolColors[school];
+    var txns = (cachedData[school] || [])
       .filter(function(t) {
-        const d = new Date(t.date + 'T00:00:00');
+        var d = new Date(t.date + 'T00:00:00');
         return d >= from && d <= to;
       })
       .sort(function(a,b) { return new Date(a.date) - new Date(b.date); });
 
-    let income = 0, expenses = 0;
+    var income = 0, expenses = 0;
     txns.forEach(function(t) {
       if (t.type === 'income') income += parseFloat(t.amount);
       else expenses += parseFloat(t.amount);
     });
-    const balance = income - expenses;
+    var balance = income - expenses;
+    var balColor = balance >= 0 ? '#1E8A3C' : '#C0390B';
 
-    bodyLines.push('── ' + schoolNames[school] + ' ──');
-    bodyLines.push('Deposits:  ' + fmt(income));
-    bodyLines.push('Expenses:  ' + fmt(expenses));
-    bodyLines.push('Balance:   ' + fmtBal(balance));
-    bodyLines.push('');
+    // School header bar
+    html += '<div style="background:#fff;border-radius:16px;overflow:hidden;' +
+      'box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:14px;">';
 
+    html += '<div style="background:' + col + ';padding:14px 18px;">' +
+      '<p style="margin:0;font-size:16px;font-weight:800;color:#fff;">' + schoolNames[school] + '</p>' +
+    '</div>';
+
+    // Summary row
+    html += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">' +
+      '<tr>' +
+        '<td width="33%" style="padding:14px 18px;text-align:center;border-right:.5px solid #E4E4E8;">' +
+          '<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#6B6B75;text-transform:uppercase;letter-spacing:.5px;">Deposits</p>' +
+          '<p style="margin:0;font-size:18px;font-weight:800;color:#1E8A3C;">$' + Math.abs(income).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') + '</p>' +
+        '</td>' +
+        '<td width="33%" style="padding:14px 18px;text-align:center;border-right:.5px solid #E4E4E8;">' +
+          '<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#6B6B75;text-transform:uppercase;letter-spacing:.5px;">Expenses</p>' +
+          '<p style="margin:0;font-size:18px;font-weight:800;color:#C0390B;">$' + Math.abs(expenses).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') + '</p>' +
+        '</td>' +
+        '<td width="34%" style="padding:14px 18px;text-align:center;">' +
+          '<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#6B6B75;text-transform:uppercase;letter-spacing:.5px;">Balance</p>' +
+          '<p style="margin:0;font-size:18px;font-weight:800;color:' + balColor + ';">' +
+            (balance < 0 ? '-' : '') + '$' + Math.abs(balance).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') +
+          '</p>' +
+        '</td>' +
+      '</tr></table>';
+
+    // Transactions
     if (txns.length) {
-      bodyLines.push('Transactions:');
-      txns.forEach(function(t) {
-        const sign = t.type === 'income' ? '+' : '-';
-        bodyLines.push('  ' + t.date + '  ' + sign + fmt(t.amount) + '  ' + (t.desc || ''));
+      html += '<div style="padding:0 18px 14px;">';
+      html += '<p style="font-size:10px;font-weight:700;color:#6B6B75;text-transform:uppercase;' +
+        'letter-spacing:.5px;margin:12px 0 8px;">Transactions</p>';
+      txns.forEach(function(t, i) {
+        var isInc = t.type === 'income';
+        var bg = i % 2 === 0 ? '#fff' : '#F5F5F7';
+        var amtColor = isInc ? '#1E8A3C' : '#C0390B';
+        var sign = isInc ? '+' : '-';
+        html += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:2px;">' +
+          '<tr style="background:' + bg + ';">' +
+            '<td style="padding:8px 10px;border-radius:8px;">' +
+              '<span style="font-size:13px;font-weight:600;color:#111318;">' + (t.desc || '(no description)') + '</span>' +
+              '<br><span style="font-size:11px;color:#B0B0B8;">' + t.date + '</span>' +
+            '</td>' +
+            '<td style="padding:8px 10px;text-align:right;font-size:14px;font-weight:800;color:' + amtColor + ';white-space:nowrap;">' +
+              sign + '$' + Math.abs(parseFloat(t.amount)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') +
+            '</td>' +
+          '</tr></table>';
       });
+      html += '</div>';
     } else {
-      bodyLines.push('No transactions in this period.');
+      html += '<p style="padding:14px 18px;font-size:13px;color:#B0B0B8;text-align:center;">No transactions in this period.</p>';
     }
-    bodyLines.push('');
+
+    html += '</div>'; // end school card
   });
 
-  bodyLines.push('Generated by Brookland PTO Ledger');
+  // Footer
+  html += '<p style="text-align:center;font-size:11px;color:#B0B0B8;margin-top:12px;">' +
+    'Generated by Brookland PTO Ledger · ' + new Date().toLocaleDateString() + '</p>';
+  html += '</div></body></html>';
 
-  const subject = 'Brookland PTO Balance Statement (' + dateFrom + ' to ' + dateTo + ')';
-  const to_addr = _mailingList.map(function(r) { return r.email; }).join(',');
-  const body    = bodyLines.join('\n');
+  // ── Build mailto ───────────────────────────────────────────────────────
+  var subject = 'Brookland PTO Balance Statement (' + dateFrom + ' to ' + dateTo + ')';
+  var to_addr = _mailingList.map(function(r) { return r.email; }).join(',');
 
-  const mailto = 'mailto:' + encodeURIComponent(to_addr)
-               + '?subject=' + encodeURIComponent(subject)
-               + '&body='    + encodeURIComponent(body);
+  // Plain-text fallback body (mailto body= is plain text only)
+  var plainLines = ['Brookland PTO Balance Statement', 'Period: ' + dateFrom + ' to ' + dateTo, ''];
+  schools.forEach(function(school) {
+    var txns = (cachedData[school] || [])
+      .filter(function(t){ var d=new Date(t.date+'T00:00:00'); return d>=from&&d<=to; })
+      .sort(function(a,b){ return new Date(a.date)-new Date(b.date); });
+    var income=0, expenses=0;
+    txns.forEach(function(t){ if(t.type==='income') income+=parseFloat(t.amount); else expenses+=parseFloat(t.amount); });
+    var balance=income-expenses;
+    plainLines.push('── ' + schoolNames[school] + ' ──');
+    plainLines.push('Deposits:  $' + Math.abs(income).toFixed(2));
+    plainLines.push('Expenses:  $' + Math.abs(expenses).toFixed(2));
+    plainLines.push('Balance:   ' + (balance<0?'-':'') + '$' + Math.abs(balance).toFixed(2));
+    plainLines.push('');
+    if (txns.length) {
+      plainLines.push('Transactions:');
+      txns.forEach(function(t){ plainLines.push('  ' + t.date + '  ' + (t.type==='income'?'+':'-') + '$' + Math.abs(parseFloat(t.amount)).toFixed(2) + '  ' + (t.desc||'')); });
+    } else { plainLines.push('No transactions in this period.'); }
+    plainLines.push('');
+  });
+  plainLines.push('Generated by Brookland PTO Ledger');
+
+  var mailto = 'mailto:' + encodeURIComponent(to_addr) +
+    '?subject=' + encodeURIComponent(subject) +
+    '&body=' + encodeURIComponent(plainLines.join('\n'));
 
   window.location.href = mailto;
 
-  const s = document.getElementById('send-status');
+  // Also open the HTML version in a new tab so they can copy-paste it into a rich-text email
+  var win = window.open('', '_blank');
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+  }
+
+  var s = document.getElementById('send-status');
   s.style.color = 'var(--green)';
-  s.textContent = 'Opening mail app…';
-  setTimeout(function() { s.textContent = ''; }, 4000);
+  s.textContent = 'Mail app opening + preview tab generated…';
+  setTimeout(function() { s.textContent = ''; }, 5000);
 }
 
 
