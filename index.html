@@ -1776,114 +1776,159 @@ function sendBalanceEmail() {
   var schoolNames = { bps: 'Primary (BPS)', bes: 'Elementary (BES)' };
   var schoolColors = { bps: '#1A6FBF', bes: '#1E8A3C' };
 
-  // ── Build themed HTML ─────────────────────────────────────────────────
-  var RED = '#B01E24';
-  var html = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
-    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-    '<title>Brookland PTO Balance Statement</title></head>' +
-    '<body style="margin:0;padding:0;background:#E8E8ED;font-family:-apple-system,BlinkMacSystemFont,\'Helvetica Neue\',Arial,sans-serif;">' +
+  // ── Build rich HTML email (fully table-based, email-client safe) ──────
+  var C_RED   = '#B01E24';
+  var C_BLUE  = '#1A6FBF';
+  var C_GREEN = '#1E8A3C';
+  var C_EXP   = '#C0390B';
+  var C_PAGE  = '#E8E8ED';
+  var C_WHITE = '#FFFFFF';
+  var C_GRAY1 = '#F5F5F7';
+  var C_GRAY2 = '#E4E4E8';
+  var C_GRAY3 = '#B0B0B8';
+  var C_GRAY4 = '#6B6B75';
+  var C_BLACK = '#111318';
+  var C_GRNLT = '#E6F5EB';
+  var C_EXPLT = '#FEF0EB';
+  var fmtAmt  = function(n) {
+    return '$' + Math.abs(parseFloat(n)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
 
-    // ── Header pill bar ──────────────────────────────────────────────────
-    '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:' + RED + ';">' +
-    '<tr><td style="padding:24px 20px 20px;">' +
-      '<p style="margin:0 0 2px;font-size:10px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.8px;text-transform:uppercase;">BROOKLAND PUBLIC SCHOOLS · AR</p>' +
-      '<p style="margin:0 0 16px;font-size:22px;font-weight:800;color:#fff;letter-spacing:-.4px;">PTO Ledger</p>' +
-      // school pills
+  // ── Outer wrapper + header ───────────────────────────────────────────
+  var html =
+    '<!DOCTYPE html><html lang="en"><head>' +
+    '<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<title>Brookland PTO Balance Statement</title></head>' +
+    '<body style="margin:0;padding:0;background:' + C_PAGE + ';font-family:Arial,Helvetica,sans-serif;">' +
+    '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:' + C_PAGE + ';"><tr><td align="center" style="padding:0;">' +
+
+    // Header
+    '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:' + C_RED + ';">' +
+    '<tr><td style="padding:28px 24px 22px;">' +
+      '<p style="margin:0 0 2px;font-size:10px;font-weight:700;color:rgba(255,255,255,.65);letter-spacing:.9px;text-transform:uppercase;">BROOKLAND PUBLIC SCHOOLS &middot; AR</p>' +
+      '<p style="margin:0 0 20px;font-size:26px;font-weight:800;color:#fff;letter-spacing:-.5px;">PTO Ledger</p>' +
       '<table cellpadding="0" cellspacing="0" border="0"><tr>';
 
   schools.forEach(function(school) {
-    var col = schoolColors[school];
-    html += '<td style="padding-right:8px;">' +
-      '<span style="display:inline-block;padding:7px 16px;border-radius:20px;' +
-        'background:#fff;color:' + RED + ';font-size:12px;font-weight:700;">' +
-      schoolNames[school] + '</span></td>';
+    html += '<td style="padding-right:8px;"><span style="display:inline-block;padding:7px 18px;border-radius:20px;background:#fff;color:' + C_RED + ';font-size:13px;font-weight:700;">' + schoolNames[school] + '</span></td>';
   });
 
-  html += '</tr></table>' +
-    '<p style="margin:10px 0 0;font-size:12px;color:rgba(255,255,255,.75);">' +
-      dateFrom + ' – ' + dateTo + '</p>' +
-    '</td></tr></table>';
+  html +=
+      '</tr></table>' +
+      '<p style="margin:12px 0 0;font-size:12px;color:rgba(255,255,255,.7);">' + dateFrom + ' &ndash; ' + dateTo + '</p>' +
+    '</td></tr></table>' +   // end header
+
+    // Body wrapper
+    '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:' + C_PAGE + ';">' +
+    '<tr><td style="padding:20px 16px 0;">';
 
   // ── Per-school cards ─────────────────────────────────────────────────
-  html += '<div style="max-width:600px;margin:0 auto;padding:16px;">';
-
   schools.forEach(function(school) {
-    var col = schoolColors[school];
+    var col  = schoolColors[school];
     var txns = (cachedData[school] || [])
-      .filter(function(t) {
-        var d = new Date(t.date + 'T00:00:00');
-        return d >= from && d <= to;
-      })
-      .sort(function(a,b) { return new Date(a.date) - new Date(b.date); });
+      .filter(function(t) { var d = new Date(t.date + 'T00:00:00'); return d >= from && d <= to; })
+      .sort(function(a, b) { return new Date(a.date) - new Date(b.date); });
 
     var income = 0, expenses = 0;
     txns.forEach(function(t) {
       if (t.type === 'income') income += parseFloat(t.amount);
-      else expenses += parseFloat(t.amount);
+      else                     expenses += parseFloat(t.amount);
     });
-    var balance = income - expenses;
-    var balColor = balance >= 0 ? '#1E8A3C' : '#C0390B';
+    var balance  = income - expenses;
+    var balColor = balance >= 0 ? C_BLUE : C_EXP;
+    var balSign  = balance < 0 ? '-' : '';
 
-    // School header bar
-    html += '<div style="background:#fff;border-radius:16px;overflow:hidden;' +
-      'box-shadow:0 1px 4px rgba(0,0,0,.08);margin-bottom:14px;">';
+    // School card
+    html +=
+      '<table width="100%" cellpadding="0" cellspacing="0" border="0" ' +
+        'style="background:' + C_WHITE + ';border-radius:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.09);">' +
 
-    html += '<div style="background:' + col + ';padding:14px 18px;">' +
-      '<p style="margin:0;font-size:16px;font-weight:800;color:#fff;">' + schoolNames[school] + '</p>' +
-    '</div>';
+      // Colored header bar
+      '<tr><td style="background:' + col + ';padding:14px 20px;border-radius:16px 16px 0 0;">' +
+        '<p style="margin:0;font-size:17px;font-weight:800;color:#fff;letter-spacing:-.3px;">' + schoolNames[school] + '</p>' +
+      '</td></tr>' +
 
-    // Summary row
-    html += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">' +
-      '<tr>' +
-        '<td width="33%" style="padding:14px 18px;text-align:center;border-right:.5px solid #E4E4E8;">' +
-          '<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#6B6B75;text-transform:uppercase;letter-spacing:.5px;">Deposits</p>' +
-          '<p style="margin:0;font-size:18px;font-weight:800;color:#1E8A3C;">$' + Math.abs(income).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') + '</p>' +
-        '</td>' +
-        '<td width="33%" style="padding:14px 18px;text-align:center;border-right:.5px solid #E4E4E8;">' +
-          '<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#6B6B75;text-transform:uppercase;letter-spacing:.5px;">Expenses</p>' +
-          '<p style="margin:0;font-size:18px;font-weight:800;color:#C0390B;">$' + Math.abs(expenses).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') + '</p>' +
-        '</td>' +
-        '<td width="34%" style="padding:14px 18px;text-align:center;">' +
-          '<p style="margin:0 0 3px;font-size:10px;font-weight:700;color:#6B6B75;text-transform:uppercase;letter-spacing:.5px;">Balance</p>' +
-          '<p style="margin:0;font-size:18px;font-weight:800;color:' + balColor + ';">' +
-            (balance < 0 ? '-' : '') + '$' + Math.abs(balance).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') +
-          '</p>' +
-        '</td>' +
-      '</tr></table>';
+      // 3-column stats row
+      '<tr><td style="padding:0;border-bottom:1px solid ' + C_GRAY2 + ';">' +
+        '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
+          '<td width="33%" align="center" style="padding:16px 8px;border-right:1px solid ' + C_GRAY2 + ';">' +
+            '<p style="margin:0 0 5px;font-size:10px;font-weight:700;color:' + C_GRAY4 + ';text-transform:uppercase;letter-spacing:.6px;">Deposits</p>' +
+            '<p style="margin:0;font-size:20px;font-weight:800;color:' + C_GREEN + ';">' + fmtAmt(income) + '</p>' +
+          '</td>' +
+          '<td width="33%" align="center" style="padding:16px 8px;border-right:1px solid ' + C_GRAY2 + ';">' +
+            '<p style="margin:0 0 5px;font-size:10px;font-weight:700;color:' + C_GRAY4 + ';text-transform:uppercase;letter-spacing:.6px;">Expenses</p>' +
+            '<p style="margin:0;font-size:20px;font-weight:800;color:' + C_EXP + ';">' + fmtAmt(expenses) + '</p>' +
+          '</td>' +
+          '<td width="34%" align="center" style="padding:16px 8px;">' +
+            '<p style="margin:0 0 5px;font-size:10px;font-weight:700;color:' + C_GRAY4 + ';text-transform:uppercase;letter-spacing:.6px;">Balance</p>' +
+            '<p style="margin:0;font-size:20px;font-weight:800;color:' + balColor + ';">' + balSign + fmtAmt(balance) + '</p>' +
+          '</td>' +
+        '</tr></table>' +
+      '</td></tr>';
 
     // Transactions
     if (txns.length) {
-      html += '<div style="padding:0 18px 14px;">';
-      html += '<p style="font-size:10px;font-weight:700;color:#6B6B75;text-transform:uppercase;' +
-        'letter-spacing:.5px;margin:12px 0 8px;">Transactions</p>';
+      html +=
+        '<tr><td style="padding:14px 20px 8px;">' +
+          '<p style="margin:0;font-size:10px;font-weight:700;color:' + C_GRAY4 + ';text-transform:uppercase;letter-spacing:.7px;">Transactions</p>' +
+        '</td></tr>';
+
+      var runBal = 0;
       txns.forEach(function(t, i) {
-        var isInc = t.type === 'income';
-        var bg = i % 2 === 0 ? '#fff' : '#F5F5F7';
-        var amtColor = isInc ? '#1E8A3C' : '#C0390B';
-        var sign = isInc ? '+' : '-';
-        html += '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:2px;">' +
-          '<tr style="background:' + bg + ';">' +
-            '<td style="padding:8px 10px;border-radius:8px;">' +
-              '<span style="font-size:13px;font-weight:600;color:#111318;">' + (t.desc || '(no description)') + '</span>' +
-              '<br><span style="font-size:11px;color:#B0B0B8;">' + t.date + '</span>' +
-            '</td>' +
-            '<td style="padding:8px 10px;text-align:right;font-size:14px;font-weight:800;color:' + amtColor + ';white-space:nowrap;">' +
-              sign + '$' + Math.abs(parseFloat(t.amount)).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',') +
-            '</td>' +
-          '</tr></table>';
+        var isInc   = t.type === 'income';
+        var rowBg   = i % 2 === 0 ? C_WHITE : C_GRAY1;
+        var amt     = parseFloat(t.amount);
+        runBal     += isInc ? amt : -amt;
+        var amtCol  = isInc ? C_GREEN : C_EXP;
+        var badgeBg = isInc ? C_GRNLT : C_EXPLT;
+        var sign    = isInc ? '+' : '-';
+        var label   = isInc ? 'Income' : 'Expense';
+        var runStr  = (runBal < 0 ? '-' : '') + fmtAmt(runBal);
+
+        html +=
+          '<tr><td style="padding:2px 12px;background:' + rowBg + ';">' +
+            '<table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>' +
+              // Type badge
+              '<td width="82" valign="middle" style="padding:9px 6px;">' +
+                '<span style="display:inline-block;padding:4px 11px;border-radius:20px;background:' + badgeBg + ';color:' + amtCol + ';font-size:11px;font-weight:700;">' + label + '</span>' +
+              '</td>' +
+              // Description + date
+              '<td valign="middle" style="padding:9px 6px;">' +
+                '<p style="margin:0;font-size:14px;font-weight:600;color:' + C_BLACK + ';">' + (t.desc || '(no description)') + '</p>' +
+                '<p style="margin:3px 0 0;font-size:11px;color:' + C_GRAY3 + ';">' + t.date + '</p>' +
+              '</td>' +
+              // Amount + running balance
+              '<td valign="middle" align="right" style="padding:9px 6px;white-space:nowrap;">' +
+                '<p style="margin:0;font-size:15px;font-weight:800;color:' + amtCol + ';">' + sign + fmtAmt(amt) + '</p>' +
+                '<p style="margin:3px 0 0;font-size:11px;font-weight:600;color:' + C_BLUE + ';">' + runStr + '</p>' +
+              '</td>' +
+            '</tr></table>' +
+          '</td></tr>';
       });
-      html += '</div>';
+
+      html += '<tr><td style="height:10px;"></td></tr>';
     } else {
-      html += '<p style="padding:14px 18px;font-size:13px;color:#B0B0B8;text-align:center;">No transactions in this period.</p>';
+      html +=
+        '<tr><td align="center" style="padding:20px;">' +
+          '<p style="margin:0;font-size:13px;color:' + C_GRAY3 + ';">No transactions in this period.</p>' +
+        '</td></tr>' +
+        '<tr><td style="height:10px;"></td></tr>';
     }
 
-    html += '</div>'; // end school card
+    html += '</table>'; // end school card
   });
 
-  // Footer
-  html += '<p style="text-align:center;font-size:11px;color:#B0B0B8;margin-top:12px;">' +
-    'Generated by Brookland PTO Ledger · ' + new Date().toLocaleDateString() + '</p>';
-  html += '</div></body></html>';
+  html +=
+    '</td></tr></table>' +   // end body section
+
+    // Footer
+    '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;">' +
+    '<tr><td align="center" style="padding:8px 16px 32px;">' +
+      '<p style="margin:0;font-size:11px;color:' + C_GRAY3 + ';">Generated by Brookland PTO Ledger &middot; ' + new Date().toLocaleDateString() + '</p>' +
+    '</td></tr></table>' +
+
+    '</td></tr></table>' +   // end outer wrapper
+    '</body></html>';
 
   // ── Build mailto ───────────────────────────────────────────────────────
   var subject = 'Brookland PTO Balance Statement (' + dateFrom + ' to ' + dateTo + ')';
