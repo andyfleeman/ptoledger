@@ -434,6 +434,16 @@ input[type=file]{display:none;}
       <!-- Invite -->
       <div class="section-hdr"><div class="section-title">Invite User</div></div>
       <div style="background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--card-shadow);margin-bottom:14px;">
+        <div style="margin-bottom:10px;">
+          <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Permission</div>
+          <div style="display:flex;gap:6px;">
+            <button id="mob-role-editor-btn" onclick="setInviteRole('mob','editor')"
+              style="flex:1;padding:8px 0;border-radius:10px;border:1.5px solid var(--blue);background:var(--blue-light);color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">✏️ Editor</button>
+            <button id="mob-role-viewer-btn" onclick="setInviteRole('mob','viewer')"
+              style="flex:1;padding:8px 0;border-radius:10px;border:1.5px solid var(--gray2);background:var(--gray1);color:var(--gray4);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">👁 View only</button>
+          </div>
+          <input type="hidden" id="mob-invite-role" value="editor">
+        </div>
         <div style="display:flex;gap:8px;">
           <input id="mob-access-email2" type="email" placeholder="Gmail address" autocomplete="email"
             style="flex:1;padding:11px 13px;border-radius:10px;border:1.5px solid var(--gray2);font-size:15px;font-family:var(--font);background:var(--gray1);outline:none;-webkit-appearance:none;color:var(--black);">
@@ -457,8 +467,7 @@ input[type=file]{display:none;}
         <div id="mob-mailing-list-items" style="padding:12px 16px 0;"></div>
         <div style="padding:14px 16px;">
           <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Add Recipient</div>
-          <input id="mob-ml-name" type="text" placeholder="Name (optional)"
-            style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);margin-bottom:8px;outline:none;-webkit-appearance:none;box-sizing:border-box;">
+
           <div style="display:flex;gap:8px;">
             <input id="mob-ml-email" type="email" placeholder="Email address"
               style="flex:1;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;-webkit-appearance:none;">
@@ -588,6 +597,16 @@ input[type=file]{display:none;}
           <!-- Invite -->
           <div class="section-title" style="margin-bottom:12px;">Invite User</div>
           <div style="background:var(--white);border-radius:16px;padding:20px;box-shadow:var(--card-shadow);">
+            <div style="margin-bottom:12px;">
+              <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Permission</div>
+              <div style="display:flex;gap:8px;">
+                <button id="desk-role-editor-btn" onclick="setInviteRole('desk','editor')"
+                  style="padding:8px 18px;border-radius:10px;border:1.5px solid var(--blue);background:var(--blue-light);color:var(--blue);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">&#9999;&#65039; Editor</button>
+                <button id="desk-role-viewer-btn" onclick="setInviteRole('desk','viewer')"
+                  style="padding:8px 18px;border-radius:10px;border:1.5px solid var(--gray2);background:var(--gray1);color:var(--gray4);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font);">&#128065; View only</button>
+              </div>
+              <input type="hidden" id="desk-invite-role" value="editor">
+            </div>
             <div style="display:flex;gap:10px;align-items:center;">
               <input id="desk-access-email2" type="email" placeholder="Gmail address to invite" autocomplete="email"
                 style="flex:1;padding:11px 14px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;color:var(--black);">
@@ -603,13 +622,8 @@ input[type=file]{display:none;}
           <div class="section-title" style="margin-bottom:12px;">Mailing List</div>
           <div style="background:var(--white);border-radius:16px;overflow:hidden;box-shadow:var(--card-shadow);padding:20px;">
             <div id="desk-mailing-list-items" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
-            <div style="display:grid;grid-template-columns:1fr 1.5fr auto;gap:10px;align-items:end;">
-              <div>
-                <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Name (optional)</div>
-                <input id="desk-ml-name" type="text" placeholder="e.g. Jane Smith" autocomplete="name"
-                  style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;box-sizing:border-box;">
-              </div>
-              <div>
+            <div style="display:flex;gap:10px;align-items:end;">
+              <div style="flex:1;">
                 <div style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;">Email Address</div>
                 <input id="desk-ml-email" type="email" placeholder="email@example.com" autocomplete="email"
                   style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--gray2);font-size:14px;font-family:var(--font);background:var(--gray1);outline:none;box-sizing:border-box;">
@@ -716,7 +730,7 @@ let scanB64 = null, scanMime = 'image/jpeg', scanVendor = null;
 let detailId = null, detailSchool = null;
 const PREVIEW = 10;
 const expanded = { bps: false, bes: false };
-let db = null, currentUser = null;
+let db = null, currentUser = null, currentUserRole = null;
 let unsub = { bps: null, bes: null };
 let cachedData = { bps: [], bes: [] };
 const isDesktop = () => window.innerWidth >= 769;
@@ -729,40 +743,57 @@ db = firebase.firestore();
 const ADMIN_EMAILS = ['abflee@gmail.com', 'andyfleeman@gmail.com'];
 
 async function checkAccess(user) {
-  if (ADMIN_EMAILS.includes(user.email)) return true;
+  if (ADMIN_EMAILS.includes(user.email)) return { allowed: true, role: 'admin' };
   try {
-    // Doc ID is the email address — single efficient lookup
     const doc = await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(user.email.toLowerCase()).get();
-    return doc.exists;
+    if (!doc.exists) return { allowed: false, role: null };
+    return { allowed: true, role: doc.data().role || 'editor' };
   } catch(e) {
-    return false;
+    return { allowed: false, role: null };
   }
 }
 
 firebase.auth().onAuthStateChanged(async user => {
   if (user) {
-    const allowed = await checkAccess(user);
-    if (!allowed) {
+    const access = await checkAccess(user);
+    if (!access.allowed) {
       firebase.auth().signOut();
       alert('Access denied.\n\n' + user.email + ' is not authorized.\nContact the PTO administrator to request access.');
       return;
     }
     currentUser = user;
+    currentUserRole = access.role;
     document.getElementById('login-screen').classList.add('hidden');
     updateUserUI(user);
     listenToLedger('bps');
     listenToLedger('bes');
-    // Show dedicated Access nav items for admins
+    // Show Access nav for admins
     if (ADMIN_EMAILS.includes(user.email)) {
       document.getElementById('pill-access').style.display = '';
       document.getElementById('desk-nav-access').style.display = '';
     }
-
+    applyRoleUI();
   } else {
     currentUser = null;
+    currentUserRole = null;
     document.getElementById('login-screen').classList.remove('hidden');
   }
 });
+
+// ── Apply UI visibility rules based on current role ───────────────────
+function applyRoleUI() {
+  var isViewer = currentUserRole === 'viewer';
+  // Hide "Add Transaction" buttons on mobile tabs
+  ['mob-tab-bps', 'mob-tab-bes'].forEach(function(tabId) {
+    var tab = document.getElementById(tabId);
+    if (!tab) return;
+    var btn = tab.querySelector('button[onclick="openAddModal()"]');
+    if (btn) btn.style.display = isViewer ? 'none' : '';
+  });
+  // Hide desktop Add Transaction button
+  var deskAdd = document.getElementById('desk-add-btn');
+  if (deskAdd && isViewer) deskAdd.style.display = 'none';
+}
 
 // ── AUTH ──────────────────────────────────────────────────────────────
 var _signingIn = false;
@@ -902,7 +933,7 @@ function renderMobile(school, data) {
         <div class="tx-amount ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
         <div class="tx-bal">${fmtBal(t.runBal)}</div>
       </div>
-      <div onclick="event.stopPropagation()" style="flex-shrink:0;margin-left:8px;display:flex;align-items:center;">
+      ${currentUserRole !== 'viewer' ? `<div onclick="event.stopPropagation()" style="flex-shrink:0;margin-left:8px;display:flex;align-items:center;">
         <button class="mob-del-btn"
           data-school="${school}"
           data-id="${t.id}"
@@ -910,7 +941,7 @@ function renderMobile(school, data) {
           data-date="${t.date}"
           data-desc="${esc(t.desc).replace(/"/g,'&quot;')}"
           onclick="handleMobDelete(this)">✕</button>
-      </div>
+      </div>` : ''}
     </div>`).join('');
   const expandBtn = hasMore ? `<div class="expand-row" onclick="toggleExpand('${school}','mob')">
     <span>${isExp ? 'Show less' : 'Show all ' + withBal.length + ' transactions'}</span>
@@ -932,13 +963,15 @@ function renderDesktop(school, data) {
   const isExp = expanded[school + '_desk'];
   const show = isExp ? withBal : withBal.slice(0, PREVIEW);
   const hasMore = withBal.length > PREVIEW;
-  const header = `<div class="desk-table-header" style="grid-template-columns:1fr 110px 110px 100px 100px 80px;">
+  const canEdit = currentUserRole !== 'viewer';
+  const hdrCols = canEdit ? '1fr 110px 110px 100px 100px 80px' : '1fr 110px 110px 100px 100px';
+  const header = `<div class="desk-table-header" style="grid-template-columns:${hdrCols};">
     <div class="desk-th">Description</div>
     <div class="desk-th">Date</div>
     <div class="desk-th">Type</div>
     <div class="desk-th right">Amount</div>
     <div class="desk-th right">Balance</div>
-    <div class="desk-th"></div>
+    ${canEdit ? '<div class="desk-th"></div>' : ''}
   </div>`;
   const rows = show.map(t => `
     <div class="desk-tr" onclick='openDetail("${school}","${t.id}")'>
@@ -950,7 +983,7 @@ function renderDesktop(school, data) {
       <div class="desk-td"><span class="desk-td-type ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'⬇ Deposit':'⬆ Expense'}</span></div>
       <div class="desk-td right desk-td-amt ${t.type==='income'?'inc':'exp'}">${t.type==='income'?'+':'-'}${fmt(t.amount)}</div>
       <div class="desk-td right desk-td-bal">${fmtBal(t.runBal)}</div>
-      <div class="desk-td" onclick="event.stopPropagation()">
+      ${canEdit ? `<div class="desk-td" onclick="event.stopPropagation()">
         <button class="desk-del-btn"
           data-school="${school}"
           data-id="${t.id}"
@@ -959,7 +992,7 @@ function renderDesktop(school, data) {
           data-desc="${esc(t.desc).replace(/"/g,'&quot;')}"
           onclick="handleDeskDelete(this)"
           title="Delete this transaction">Delete</button>
-      </div>
+      </div>` : ''}
     </div>`).join('');
   const expandBtn = hasMore ? `<div class="desk-expand-row" onclick="toggleExpand('${school}','desk')">
     <span>${isExp ? 'Show less' : 'Show all ' + withBal.length + ' transactions'}</span>
@@ -1001,7 +1034,7 @@ function deskTab(tab) {
   document.getElementById('desk-nav-export').className = 'desk-nav-item' + (tab === 'export' ? ' active' : '');
   document.getElementById('desk-nav-access').className = 'desk-nav-item' + (tab === 'access' ? ' active' : '');
   activeTab = tab;
-  document.getElementById('desk-add-btn').style.display = (tab === 'export' || tab === 'access') ? 'none' : 'flex';
+  document.getElementById('desk-add-btn').style.display = (tab === 'export' || tab === 'access' || currentUserRole === 'viewer') ? 'none' : 'flex';
   const titles = { bps: ['Primary School — BPS', 'Brookland Primary School'], bes: ['Elementary School — BES', 'Brookland Elementary School'], export: ['Export', 'Download ledger data or email a statement'], access: ['Manage Access', 'Invite or remove users'] };
   document.getElementById('desk-topbar-title').textContent = titles[tab][0];
   document.getElementById('desk-topbar-sub').textContent = titles[tab][1];
@@ -1637,8 +1670,6 @@ async function loadAuthorizedUsers2() {
 }
 
 function renderAccessList2() {
-  const isMob = document.getElementById('mob-tab-access').style.display !== 'none';
-
   // ── mobile list ──────────────────────────────────────────────────────
   (function() {
     const container = document.getElementById('mob-access-list2');
@@ -1649,26 +1680,47 @@ function renderAccessList2() {
       return;
     }
     _authorizedUsers.forEach(function(u) {
+      const role = u.role || 'editor';
       const row = document.createElement('div');
       row.className = 'ledger-item';
       row.style.cursor = 'default';
+
       const icon = document.createElement('div');
       icon.className = 'tx-icon inc';
       icon.textContent = '👤';
+
       const main = document.createElement('div');
       main.className = 'tx-main';
-      const email = document.createElement('div');
-      email.className = 'tx-desc';
-      email.textContent = u.email;
-      main.appendChild(email);
+      const emailDiv = document.createElement('div');
+      emailDiv.className = 'tx-desc';
+      emailDiv.textContent = u.email;
+      const badge = document.createElement('span');
+      badge.style.cssText = role === 'viewer'
+        ? 'display:inline-block;margin-top:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;background:var(--gray1);color:var(--gray4);border:1px solid var(--gray2);'
+        : 'display:inline-block;margin-top:3px;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;background:var(--blue-light);color:var(--blue);';
+      badge.textContent = role === 'viewer' ? '👁 Viewer' : '✏️ Editor';
+      main.appendChild(emailDiv);
+      main.appendChild(badge);
+
+      const actions = document.createElement('div');
+      actions.style.cssText = 'display:flex;flex-direction:column;gap:5px;align-items:flex-end;flex-shrink:0;margin-left:8px;';
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.style.cssText = 'padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font);background:var(--blue-light);color:var(--blue);border:1px solid var(--blue);white-space:nowrap;';
+      toggleBtn.textContent = role === 'viewer' ? 'Make Editor' : 'Make Viewer';
+      toggleBtn.onclick = function() { updateUserRole(u.id, u.email, role === 'viewer' ? 'editor' : 'viewer'); };
+
       const removeBtn = document.createElement('button');
       removeBtn.textContent = 'Remove';
       removeBtn.className = 'mob-del-btn';
-      removeBtn.style.cssText = 'width:auto;padding:5px 12px;font-size:12px;border-radius:8px;';
+      removeBtn.style.cssText = 'width:auto;padding:4px 10px;font-size:11px;border-radius:8px;';
       removeBtn.onclick = function() { removeAuthorizedUser2(u.id, u.email); };
+
+      actions.appendChild(toggleBtn);
+      actions.appendChild(removeBtn);
       row.appendChild(icon);
       row.appendChild(main);
-      row.appendChild(removeBtn);
+      row.appendChild(actions);
       container.appendChild(row);
     });
   })();
@@ -1678,10 +1730,11 @@ function renderAccessList2() {
     const container = document.getElementById('desk-access-list2');
     if (!container) return;
     container.innerHTML = '';
-    // header row
     const hdr = document.createElement('div');
-    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:.5px solid var(--gray2);background:var(--gray1);';
-    hdr.innerHTML = '<span style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;">Email</span><span style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;">Action</span>';
+    hdr.style.cssText = 'display:grid;grid-template-columns:1fr 120px 140px;padding:10px 20px;border-bottom:.5px solid var(--gray2);background:var(--gray1);';
+    hdr.innerHTML = '<span style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;">Email</span>' +
+      '<span style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;">Role</span>' +
+      '<span style="font-size:11px;font-weight:700;color:var(--gray4);text-transform:uppercase;letter-spacing:.5px;text-align:right;">Action</span>';
     container.appendChild(hdr);
     if (!_authorizedUsers.length) {
       const empty = document.createElement('div');
@@ -1691,20 +1744,40 @@ function renderAccessList2() {
       return;
     }
     _authorizedUsers.forEach(function(u) {
+      const role = u.role || 'editor';
       const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:.5px solid var(--gray2);';
-      row.style.cssText += 'transition:background .15s;';
+      row.style.cssText = 'display:grid;grid-template-columns:1fr 120px 140px;align-items:center;padding:14px 20px;border-bottom:.5px solid var(--gray2);transition:background .15s;';
       row.onmouseover = function() { this.style.background = 'var(--gray1)'; };
       row.onmouseout  = function() { this.style.background = ''; };
+
       const emailSpan = document.createElement('span');
-      emailSpan.style.cssText = 'font-size:14px;font-weight:600;color:var(--black);';
+      emailSpan.style.cssText = 'font-size:14px;font-weight:600;color:var(--black);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
       emailSpan.textContent = u.email;
+
+      const badge = document.createElement('span');
+      badge.style.cssText = role === 'viewer'
+        ? 'display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:var(--gray1);color:var(--gray4);border:1px solid var(--gray2);'
+        : 'display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700;background:var(--blue-light);color:var(--blue);';
+      badge.textContent = role === 'viewer' ? '👁 Viewer' : '✏️ Editor';
+
+      const btnWrap = document.createElement('div');
+      btnWrap.style.cssText = 'display:flex;gap:6px;justify-content:flex-end;';
+
+      const toggleBtn = document.createElement('button');
+      toggleBtn.style.cssText = 'padding:5px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);background:var(--blue-light);color:var(--blue);border:1px solid var(--blue);white-space:nowrap;';
+      toggleBtn.textContent = role === 'viewer' ? 'Make Editor' : 'Make Viewer';
+      toggleBtn.onclick = function() { updateUserRole(u.id, u.email, role === 'viewer' ? 'editor' : 'viewer'); };
+
       const removeBtn = document.createElement('button');
       removeBtn.textContent = 'Remove';
       removeBtn.className = 'desk-del-btn';
       removeBtn.onclick = function() { removeAuthorizedUser2(u.id, u.email); };
+
+      btnWrap.appendChild(toggleBtn);
+      btnWrap.appendChild(removeBtn);
       row.appendChild(emailSpan);
-      row.appendChild(removeBtn);
+      row.appendChild(badge);
+      row.appendChild(btnWrap);
       container.appendChild(row);
     });
   })();
@@ -1720,8 +1793,10 @@ async function addAuthorizedUser2(prefix) {
   if (ADMIN_EMAILS.includes(email)) { status.style.color='var(--red)'; status.textContent='That\'s an admin account — already has access.'; return; }
   if (_authorizedUsers.find(u => u.email === email)) { status.style.color='var(--red)'; status.textContent='Already has access.'; return; }
   try {
-    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(email).set({ email, addedBy: currentUser.email, added: new Date().toISOString() });
-    _authorizedUsers.push({ id: email, email });
+    const roleEl = document.getElementById(prefix === 'mob2' ? 'mob-invite-role' : 'desk-invite-role');
+    const role = roleEl ? roleEl.value : 'editor';
+    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(email).set({ email, role, addedBy: currentUser.email, added: new Date().toISOString() });
+    _authorizedUsers.push({ id: email, email, role });
     _authorizedUsers.sort((a,b) => a.email.localeCompare(b.email));
     renderAccessList2();
     input.value = '';
@@ -1742,6 +1817,34 @@ async function removeAuthorizedUser2(id, email) {
     renderAccessList2();
   } catch(e) {
     alert('Error removing user: ' + e.message);
+  }
+}
+
+// Toggle the Editor/Viewer selector in the invite form
+function setInviteRole(prefix, role) {
+  const editorBtn = document.getElementById(prefix + '-role-editor-btn');
+  const viewerBtn = document.getElementById(prefix + '-role-viewer-btn');
+  const roleInput = document.getElementById(prefix + '-invite-role');
+  if (!editorBtn || !viewerBtn || !roleInput) return;
+  if (role === 'editor') {
+    editorBtn.style.borderColor = 'var(--blue)'; editorBtn.style.background = 'var(--blue-light)'; editorBtn.style.color = 'var(--blue)';
+    viewerBtn.style.borderColor = 'var(--gray2)'; viewerBtn.style.background = 'var(--gray1)'; viewerBtn.style.color = 'var(--gray4)';
+  } else {
+    viewerBtn.style.borderColor = 'var(--gray4)'; viewerBtn.style.background = 'var(--gray2)'; viewerBtn.style.color = 'var(--black)';
+    editorBtn.style.borderColor = 'var(--gray2)'; editorBtn.style.background = 'var(--gray1)'; editorBtn.style.color = 'var(--gray4)';
+  }
+  roleInput.value = role;
+}
+
+// Change an existing user's role
+async function updateUserRole(id, email, newRole) {
+  try {
+    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(id).update({ role: newRole });
+    var u = _authorizedUsers.find(function(x) { return x.id === id; });
+    if (u) u.role = newRole;
+    renderAccessList2();
+  } catch(e) {
+    alert('Error updating role: ' + e.message);
   }
 }
 
