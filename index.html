@@ -5,7 +5,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<!-- v1779757387 -->
+<!-- v1779876856 -->
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -770,14 +770,27 @@ function signInWithGoogle() {
   if (_signingIn) return;
   _signingIn = true;
   var provider = new firebase.auth.GoogleAuthProvider();
-  firebase.auth().signInWithPopup(provider).catch(function(err) {
+  firebase.auth().signInWithPopup(provider).then(function() {
+    // Auth state handled by onAuthStateChanged
+  }).catch(function(err) {
+    if (err.code === 'auth/popup-blocked') {
+      // Popup was blocked — fall back to redirect flow
+      firebase.auth().signInWithRedirect(provider);
+      return;
+    }
     if (err.code !== 'auth/cancelled-popup-request' && err.code !== 'auth/popup-closed-by-user') {
       alert('Sign-in failed: ' + err.message);
     }
-  }).finally(function() {
     _signingIn = false;
   });
 }
+
+// Handle redirect result on page load (fallback for popup-blocked browsers)
+firebase.auth().getRedirectResult().catch(function(err) {
+  if (err.code && err.code !== 'auth/cancelled-popup-request') {
+    document.getElementById('login-note').textContent = 'Sign-in failed: ' + err.message;
+  }
+});
 function doSignOut() {
   if (!confirm('Sign out of PTO Ledger?')) return;
   if (unsub.bps) unsub.bps();
@@ -975,7 +988,7 @@ function switchTab(tab) {
   document.getElementById('pill-export').className = 'pill-export' + (tab === 'export' ? ' active' : '');
   document.getElementById('pill-access').className = 'pill-export' + (tab === 'access' ? ' active' : '');
   activeTab = tab;
-  if (tab === 'export') { loadRecipients(); loadAuthorizedUsers(); }
+  if (tab === 'export') { loadRecipients(); }
   if (tab === 'access') { loadAuthorizedUsers2(); }
   document.getElementById('mob-scroll').scrollTop = 0;
 }
@@ -993,7 +1006,7 @@ function deskTab(tab) {
   document.getElementById('desk-topbar-sub').textContent = titles[tab][1];
   document.getElementById('desk-sidebar-summary').style.display = (tab === 'export' || tab === 'access') ? 'none' : 'block';
   if (tab !== 'export' && tab !== 'access') updateSidebarSummary(tab, cachedData[tab]);
-  if (tab === 'export') { loadRecipients(); loadAuthorizedUsers(); }
+  if (tab === 'export') { loadRecipients(); }
   if (tab === 'access') { loadAuthorizedUsers2(); }
   document.getElementById('desk-content').scrollTop = 0;
 }
@@ -1312,42 +1325,6 @@ function exportCSV(which) {
   });
 }
 
-// ── CLOCK ─────────────────────────────────────────────────────────────
-// Clock removed (status bar removed)
-
-// ── GEMINI KEY MANAGEMENT ─────────────────────
-function saveGeminiKeyFromInput() {
-  const mobInput = document.getElementById('gemini-key-input');
-  const deskInput = document.getElementById('desk-gemini-key-input');
-  const key = (mobInput?.value || deskInput?.value || '').trim();
-  if (!key || key.length < 20) {
-    const msg = 'Please paste a valid Gemini API key.';
-    if (document.getElementById('gemini-key-status')) document.getElementById('gemini-key-status').textContent = msg;
-    if (document.getElementById('desk-gemini-key-status')) document.getElementById('desk-gemini-key-status').textContent = msg;
-    return;
-  }
-  localStorage.setItem('pto_gemini_key', key);
-  if (mobInput) mobInput.value = '';
-  if (deskInput) deskInput.value = '';
-  const successMsg = '✅ Key saved! Receipt scanning is ready.';
-  const errColor = 'var(--green)';
-  if (document.getElementById('gemini-key-status')) {
-    document.getElementById('gemini-key-status').textContent = successMsg;
-    document.getElementById('gemini-key-status').style.color = errColor;
-  }
-  if (document.getElementById('desk-gemini-key-status')) {
-    document.getElementById('desk-gemini-key-status').textContent = successMsg;
-    document.getElementById('desk-gemini-key-status').style.color = errColor;
-  }
-  setTimeout(() => {
-    if (document.getElementById('gemini-key-status')) document.getElementById('gemini-key-status').textContent = '';
-    if (document.getElementById('desk-gemini-key-status')) document.getElementById('desk-gemini-key-status').textContent = '';
-  }, 3000);
-}
-
-function getGeminiKey() {
-  return localStorage.getItem('pto_gemini_key') || '';
-}
 
 
 // ══════════════════════════════════════════════
@@ -1643,82 +1620,8 @@ function buildEmailHTML(schoolLabel, fromDate, toDate, transactions, currentBal,
 // ── ACCESS MANAGEMENT (admin only) ─────────────────────────────────────
 let _authorizedUsers = [];
 
-async function loadAuthorizedUsers() {
-  // kept for renderAccessList() compatibility — no longer shows/hides removed elements
-  if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email)) return;
-  try {
-    const snap = await db.collection('pto').doc('brookland').collection('authorizedUsers').get();
-    _authorizedUsers = [];
-    snap.forEach(d => _authorizedUsers.push({ id: d.id, ...d.data() }));
-    _authorizedUsers.sort((a,b) => (a.email||'').localeCompare(b.email||''));
-  } catch(e) {
-    console.error('loadAuthorizedUsers:', e);
-  }
-}
 
-function renderAccessList() {
-  ['mob','desk'].forEach(prefix => {
-    const container = document.getElementById(prefix+'-access-list');
-    if (!container) return;
-    container.innerHTML = '';
-    if (_authorizedUsers.length === 0) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'font-size:13px;color:var(--gray4);padding:8px 0;';
-      empty.textContent = 'No additional users. Only you have access.';
-      container.appendChild(empty);
-      return;
-    }
-    _authorizedUsers.forEach(u => {
-      const row = document.createElement('div');
-      row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--gray2);';
-      const info = document.createElement('div');
-      info.style.cssText = 'font-size:14px;color:var(--text);';
-      info.textContent = u.email;
-      const btn = document.createElement('button');
-      btn.textContent = 'Remove';
-      btn.style.cssText = 'padding:5px 12px;border-radius:8px;background:#fff;border:1.5px solid var(--red);color:var(--red);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);';
-      btn.onclick = () => removeAuthorizedUser(u.id, u.email);
-      row.appendChild(info);
-      row.appendChild(btn);
-      container.appendChild(row);
-    });
-  });
-}
-
-async function addAuthorizedUser(prefix) {
-  const input = document.getElementById(prefix+'-access-email');
-  const status = document.getElementById(prefix+'-access-status');
-  const email = (input.value || '').trim().toLowerCase();
-  if (!email || !email.includes('@')) { status.style.color='var(--red)'; status.textContent='Enter a valid email.'; return; }
-  if (ADMIN_EMAILS.includes(email)) { status.style.color='var(--red)'; status.textContent='That\x27s the admin account \u2014 already has access.'; return; }
-  if (_authorizedUsers.find(u => u.email === email)) { status.style.color='var(--red)'; status.textContent='Already has access.'; return; }
-  try {
-    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(email).set({ email, addedBy: currentUser.email, added: new Date().toISOString() });
-    _authorizedUsers.push({ id: email, email });
-    _authorizedUsers.sort((a,b) => a.email.localeCompare(b.email));
-    renderAccessList();
-    input.value = '';
-    status.style.color = 'green';
-    status.textContent = '✅ ' + email + ' can now access the ledger.';
-    setTimeout(() => { status.textContent = ''; }, 4000);
-  } catch(e) {
-    status.style.color = 'var(--red)';
-    status.textContent = 'Error: ' + e.message;
-  }
-}
-
-async function removeAuthorizedUser(id, email) {
-  if (!confirm('Remove access for ' + email + '?')) return;
-  try {
-    await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(email).delete();
-    _authorizedUsers = _authorizedUsers.filter(u => u.email !== email);
-    renderAccessList();
-  } catch(e) {
-    alert('Error removing user: ' + e.message);
-  }
-}
-
-// ── ACCESS TAB (dedicated module) ───────────────────────────────────────
+// ── ACCESS TAB ───────────────────────────────────────────────────────────
 async function loadAuthorizedUsers2() {
   if (!currentUser || !ADMIN_EMAILS.includes(currentUser.email)) return;
   try {
@@ -1820,7 +1723,6 @@ async function addAuthorizedUser2(prefix) {
     _authorizedUsers.push({ id: email, email });
     _authorizedUsers.sort((a,b) => a.email.localeCompare(b.email));
     renderAccessList2();
-    renderAccessList(); // keep old export-tab panel in sync
     input.value = '';
     status.style.color = 'var(--green)';
     status.textContent = email + ' added.';
@@ -1837,7 +1739,6 @@ async function removeAuthorizedUser2(id, email) {
     await db.collection('pto').doc('brookland').collection('authorizedUsers').doc(id).delete();
     _authorizedUsers = _authorizedUsers.filter(u => u.id !== id);
     renderAccessList2();
-    renderAccessList(); // keep old export-tab panel in sync
   } catch(e) {
     alert('Error removing user: ' + e.message);
   }
@@ -2013,7 +1914,13 @@ function sendBalanceEmail() {
     '?subject=' + encodeURIComponent(subject) +
     '&body=' + encodeURIComponent(plainLines.join('\n'));
 
-  window.location.href = mailto;
+  // Open mailto via a hidden link so we don't navigate away and kill Firebase auth
+  var link = document.createElement('a');
+  link.href = mailto;
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
   // Also open the HTML version in a new tab so they can copy-paste it into a rich-text email
   var win = window.open('', '_blank');
