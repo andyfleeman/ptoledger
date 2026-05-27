@@ -781,6 +781,7 @@ function signInWithGoogle() {
     if (err.code !== 'auth/cancelled-popup-request' && err.code !== 'auth/popup-closed-by-user') {
       alert('Sign-in failed: ' + err.message);
     }
+  }).finally(function() {
     _signingIn = false;
   });
 }
