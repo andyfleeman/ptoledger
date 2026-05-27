@@ -2013,15 +2013,9 @@ function sendBalanceEmail() {
     '?subject=' + encodeURIComponent(subject) +
     '&body=' + encodeURIComponent(plainLines.join('\n'));
 
-  // Open mailto via a hidden link so we don't navigate away and kill Firebase auth
-  var link = document.createElement('a');
-  link.href = mailto;
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  window.location.href = mailto;
 
-  // Open themed HTML preview in a new tab
+  // Also open the HTML version in a new tab so they can copy-paste it into a rich-text email
   var win = window.open('', '_blank');
   if (win) {
     win.document.write(html);
