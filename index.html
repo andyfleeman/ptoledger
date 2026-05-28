@@ -1152,7 +1152,7 @@ async function scanWithGemini(base64, mimeType) {
     'First determine if this is a deposit slip or bank deposit (income) vs a purchase or expense receipt (expense).',
     'Extract: the final dollar total (just the number), the store or vendor name, the best 2-4 word category label for what this transaction is for (e.g. "School Supplies", "Field Trip Fees", "Food & Beverages", "Bank Deposit", "Fundraiser Income"), and the date.',
     'Reply with ONLY a raw JSON object on a single line. No markdown fences, no backticks, no extra text before or after.',
-    'Use exactly these keys: transactionType ("income" if this is a deposit slip or bank deposit, "expense" if this is a purchase or expense receipt), amount (number or null), vendor (string or null), description (string or null, best category label), date (YYYY-MM-DD string or null).',
+    'Use exactly these keys: transactionType (MUST be exactly "income" for any deposit slip, bank deposit, or check being deposited — or exactly "expense" for any purchase, payment, or expense receipt — never null, always one of those two strings), amount (number or null), vendor (string or null), description (string or null, best category label), date (YYYY-MM-DD string or null).',
     'Example deposit: {"transactionType":"income","amount":150.00,"vendor":"Chase Bank","description":"Bank Deposit","date":"2025-05-01"}',
     'Example expense: {"transactionType":"expense","amount":47.23,"vendor":"Walmart","description":"School Supplies","date":"2025-05-01"}'
   ].join(' ');
@@ -1211,9 +1211,13 @@ async function scanWithGemini(base64, mimeType) {
 
   if (!parsed) throw new Error('Could not read the receipt. Please enter the amount manually.');
 
-  // Sanitize values
+  // Sanitize values — be forgiving about transactionType casing/synonyms
+  const _rawType = typeof parsed.transactionType === 'string' ? parsed.transactionType.toLowerCase().trim() : '';
+  const _isIncome = ['income', 'deposit', 'credit', 'bank deposit', 'incoming', 'revenue'].some(w => _rawType.includes(w));
+  const _isExpense = ['expense', 'purchase', 'debit', 'payment', 'charge', 'spending', 'cost', 'receipt'].some(w => _rawType.includes(w));
+  const _detectedType = _isIncome ? 'income' : (_isExpense ? 'expense' : null);
   return {
-    transactionType: parsed.transactionType === 'income' ? 'income' : (parsed.transactionType === 'expense' ? 'expense' : null),
+    transactionType: _detectedType,
     amount: parsed.amount != null && !isNaN(parseFloat(parsed.amount)) ? parseFloat(parsed.amount) : null,
     vendor: typeof parsed.vendor === 'string' && parsed.vendor !== 'null' ? parsed.vendor.trim() : null,
     description: typeof parsed.description === 'string' && parsed.description !== 'null' ? parsed.description.trim() : null,
