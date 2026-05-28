@@ -1090,6 +1090,7 @@ document.getElementById('camera-input').addEventListener('change', async functio
     try {
       const r = await scanWithGemini(scanB64, scanMime);
       document.getElementById('scanning-msg').style.display = 'none';
+      if (r.transactionType) setType(r.transactionType);
       if (r.amount != null && !isNaN(r.amount)) document.getElementById('amount-input').value = parseFloat(r.amount).toFixed(2);
       if (r.date) document.getElementById('date-input').value = r.date;
       // Auto-fill description: prefer vendor name, fall back to description
@@ -1113,7 +1114,7 @@ document.getElementById('camera-input').addEventListener('change', async functio
       document.getElementById('scan-area').style.display = 'block';
       document.getElementById('scan-area-text').textContent = 'Re-scan';
       // Snapshot AI values for correction tracking
-      window._aiScanResult = { amount: r.amount, vendor: r.vendor || null, description: r.description || null, date: r.date || null };
+      window._aiScanResult = { transactionType: r.transactionType || null, amount: r.amount, vendor: r.vendor || null, description: r.description || null, date: r.date || null };
     } catch(err) {
       document.getElementById('scanning-msg').style.display = 'none';
       document.getElementById('scan-area').style.display = 'block';
@@ -1148,10 +1149,12 @@ async function scanWithGemini(base64, mimeType) {
   // Simple, unambiguous prompt - no embedded JSON examples that confuse the model
   const prompt = [
     'Analyze this receipt or deposit slip image.',
-    'Extract: the final dollar total (just the number), the store or vendor name, a brief 2-4 word description of what was purchased, and the date.',
+    'First determine if this is a deposit slip or bank deposit (income) vs a purchase or expense receipt (expense).',
+    'Extract: the final dollar total (just the number), the store or vendor name, the best 2-4 word category label for what this transaction is for (e.g. "School Supplies", "Field Trip Fees", "Food & Beverages", "Bank Deposit", "Fundraiser Income"), and the date.',
     'Reply with ONLY a raw JSON object on a single line. No markdown fences, no backticks, no extra text before or after.',
-    'Use exactly these keys: amount (number or null), vendor (string or null), description (string or null), date (YYYY-MM-DD string or null).',
-    'Example of correct response: {"amount":47.23,"vendor":"Walmart","description":"School supplies","date":"2025-05-01"}'
+    'Use exactly these keys: transactionType ("income" if this is a deposit slip or bank deposit, "expense" if this is a purchase or expense receipt), amount (number or null), vendor (string or null), description (string or null, best category label), date (YYYY-MM-DD string or null).',
+    'Example deposit: {"transactionType":"income","amount":150.00,"vendor":"Chase Bank","description":"Bank Deposit","date":"2025-05-01"}',
+    'Example expense: {"transactionType":"expense","amount":47.23,"vendor":"Walmart","description":"School Supplies","date":"2025-05-01"}'
   ].join(' ');
 
   const models = ['gemini-2.5-flash-preview-05-20', 'gemini-2.0-flash', 'gemini-1.5-flash'];
@@ -1169,7 +1172,7 @@ async function scanWithGemini(base64, mimeType) {
               { inline_data: { mime_type: mimeType, data: base64 } },
               { text: prompt }
             ]}],
-            generationConfig: { temperature: 0, maxOutputTokens: 200, responseMimeType: 'application/json' }
+            generationConfig: { temperature: 0, maxOutputTokens: 300, responseMimeType: 'application/json' }
           })
         }
       );
@@ -1210,6 +1213,7 @@ async function scanWithGemini(base64, mimeType) {
 
   // Sanitize values
   return {
+    transactionType: parsed.transactionType === 'income' ? 'income' : (parsed.transactionType === 'expense' ? 'expense' : null),
     amount: parsed.amount != null && !isNaN(parseFloat(parsed.amount)) ? parseFloat(parsed.amount) : null,
     vendor: typeof parsed.vendor === 'string' && parsed.vendor !== 'null' ? parsed.vendor.trim() : null,
     description: typeof parsed.description === 'string' && parsed.description !== 'null' ? parsed.description.trim() : null,
@@ -1240,15 +1244,17 @@ async function saveTransaction() {
     const hasCorrectedAmount = aiAmount !== userAmount;
     const hasCorrectedVendor = (ai.vendor || null) !== userVendor;
     const hasCorrectedDesc = (ai.description || null) !== userDesc;
-    const hasCorrected = hasCorrectedAmount || hasCorrectedVendor || hasCorrectedDesc;
+    const hasCorrectedType = ai.transactionType ? ai.transactionType !== activeType : false;
+    const hasCorrected = hasCorrectedAmount || hasCorrectedVendor || hasCorrectedDesc || hasCorrectedType;
     // Always save scan feedback — corrections noted where they differ
     try {
       await db.collection('pto').doc('brookland').collection('scanFeedback').add({
         created: new Date().toISOString(),
         aiResult: ai,
-        userResult: { amount: userAmount, vendor: userVendor, description: userDesc, date },
+        userResult: { transactionType: activeType, amount: userAmount, vendor: userVendor, description: userDesc, date },
         hasCorrected,
         correctedFields: {
+          transactionType: hasCorrectedType,
           amount: hasCorrectedAmount,
           vendor: hasCorrectedVendor,
           description: hasCorrectedDesc
