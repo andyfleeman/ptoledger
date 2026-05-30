@@ -1157,7 +1157,7 @@ async function scanWithGemini(base64, mimeType) {
     'Example expense: {"transactionType":"expense","amount":47.23,"vendor":"Walmart","description":"School Supplies","date":"2025-05-01"}'
   ].join(' ');
 
-  const models = ['gemini-2.5-flash-preview-05-20', 'gemini-2.0-flash', 'gemini-1.5-flash'];
+  const models = ['gemini-2.5-flash', 'gemini-2.5-flash-preview-05-20'];
   let resp, lastErr;
 
   for (const model of models) {
